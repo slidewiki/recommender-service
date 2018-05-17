@@ -1,0 +1,93 @@
+import logging
+import logging.config
+import os
+from flask import Flask, Blueprint
+import settings
+from flask_restplus import Api, Resource, fields
+from app.reco import recommender
+
+app = Flask(__name__)
+logging_conf_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../logging.conf'))
+logging.config.fileConfig(logging_conf_path)
+log = logging.getLogger(__name__)
+
+
+def configure_app(flask_app):
+    flask_app.config['SERVER_NAME'] = settings.FLASK_SERVER_NAME
+    flask_app.config['SWAGGER_UI_DOC_EXPANSION'] = settings.RESTPLUS_SWAGGER_UI_DOC_EXPANSION
+    flask_app.config['RESTPLUS_VALIDATE'] = settings.RESTPLUS_VALIDATE
+    flask_app.config['RESTPLUS_MASK_SWAGGER'] = settings.RESTPLUS_MASK_SWAGGER
+    flask_app.config['ERROR_404_HELP'] = settings.RESTPLUS_ERROR_404_HELP
+
+
+def initialize_app(flask_app):
+    configure_app(flask_app)
+
+    blueprint = Blueprint('api', __name__, url_prefix='/api')
+
+    log = logging.getLogger(__name__)
+    api = Api(version='Beta', title='Recommender Service',
+              description='Recommendation of SlideWiki decks')
+
+    @api.errorhandler
+    def default_error_handler(e):
+        message = 'An unhandled exception occurred.'
+        log.exception(message)
+
+        if not settings.FLASK_DEBUG:
+            return {'message': message}, 500
+
+    api.init_app(blueprint)
+
+    recommendation_namespace = api.namespace('userRecommendation',
+                                             description='Operations related to user recommendation')
+
+    deck = api.model('Recommended deck', {
+        'id': fields.Integer(readOnly=True, required=True, description='The unique identifier of a deck'),
+        'title': fields.String(description='Deck title'),
+        'description': fields.String(description='Deck description'),
+        'value': fields.Float(description='Recommendation value'),
+    })
+
+    @recommendation_namespace.route('/<int:user_id>')
+    @api.response(404, 'User id not found.')
+    class CategoryCollection(Resource):
+
+        @api.marshal_list_with(deck)
+        def get(self, user_id):
+            """
+            Returns list of recommended decks for a user.
+            """
+            number_reco = 6
+            file_name_suffix = "Full1500"
+            rec = recommender.RecommenderSystem()
+
+            #check valid user_id
+            user_ids_positions = rec.load_dict("user_ids_positions" + file_name_suffix)
+            if str(user_id) not in user_ids_positions:
+                return None, 404
+
+            recommended_decks, reco_values = rec.get_recommendation_from_storage(rec, user_id, number_reco, file_name_suffix)
+            all_data_dict = rec.load_dict("deckid_title_descrip")
+            recommended_decks_list_dict = []
+            cont = 0
+            for i in recommended_decks:
+                recommended_deck = all_data_dict[str(i)]
+                recommended_deck['value'] = reco_values[cont]
+                recommended_decks_list_dict.append(recommended_deck)
+                cont += 1
+
+            return recommended_decks_list_dict
+
+    api.add_namespace(recommendation_namespace)
+    flask_app.register_blueprint(blueprint)
+
+
+def main():
+    initialize_app(app)
+    log.info('>>>>> Starting development server at http://{}/api/ <<<<<'.format(app.config['SERVER_NAME']))
+    app.run(debug=settings.FLASK_DEBUG, use_reloader=False)
+
+
+if __name__ == "__main__":
+    main()
