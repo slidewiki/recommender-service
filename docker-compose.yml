@@ -1,0 +1,10 @@
+nlpservice:
+  image: slidewiki/recommender-service:latest-dev
+  restart: on-failure:5
+  expose:
+    - "9000"
+  environment:
+    - VIRTUAL_HOST=recommenderservice.experimental.slidewiki.org
+    - SERVICE_URL_DECK=https://deckservice.experimental.slidewiki.org
+    - LETSENCRYPT_HOST=recommenderservice.experimental.slidewiki.org
+    - LETSENCRYPT_EMAIL=meissner@informatik.uni-leipzig.de
