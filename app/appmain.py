@@ -1,10 +1,15 @@
 import logging
 import logging.config
 import os
-from flask import Flask, Blueprint
 import settings
+from flask import Flask, Blueprint
 from flask_restplus import Api, Resource, fields
+import sys
+
+sys.path.append("/")
+
 from app.reco import recommender
+
 
 app = Flask(__name__)
 logging_conf_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../logging.conf'))
@@ -23,7 +28,7 @@ def configure_app(flask_app):
 def initialize_app(flask_app):
     configure_app(flask_app)
 
-    blueprint = Blueprint('api', __name__, url_prefix='/api')
+    blueprint = Blueprint('reco', __name__, url_prefix='/reco')
 
     log = logging.getLogger(__name__)
     api = Api(version='Beta', title='Recommender Service',
@@ -85,7 +90,7 @@ def initialize_app(flask_app):
 
 def main():
     initialize_app(app)
-    log.info('>>>>> Starting development server at http://{}/api/ <<<<<'.format(app.config['SERVER_NAME']))
+    log.info('>>>>> Starting server at http://{}/reco/ <<<<<'.format(app.config['SERVER_NAME']))
     app.run(debug=settings.FLASK_DEBUG, use_reloader=False)
 
 

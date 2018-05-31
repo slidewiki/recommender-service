@@ -1,21 +1,14 @@
-FROM python:3.6
+FROM python:3
 MAINTAINER Roy Meissner <meissner@informatik.uni-leipzig.de>
-
-#WORKDIR /opt/docker
 
 # ---------------- #
 #   Installation   #
 # ---------------- #
 
-#ADD app/ .
+COPY requirements.txt ./
+RUN pip install --no-cache-dir -r requirements.txt
 
-RUN mkdir /recommender
-WORKDIR /recommender
-
-COPY . /recommender
-
-#COPY requirements.txt .
-RUN pip install -r requirements.txt
+COPY . .
 
 # ----------------- #
 #   Configuration   #
@@ -36,6 +29,4 @@ RUN apt-get update && \
 #   Run!   #
 # -------- #
 
-#ENTRYPOINT ["python app/appmain.py"]
-
-CMD python app/appmain.py
+CMD [ "python", "./app/appmain.py" ]

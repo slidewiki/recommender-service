@@ -1,4 +1,4 @@
-nlpservice:
+recommender-service:
   image: slidewiki/recommender-service:latest-dev
   restart: on-failure:5
   expose:
