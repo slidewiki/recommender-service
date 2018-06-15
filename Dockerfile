@@ -1,12 +1,16 @@
 FROM python:3
-MAINTAINER Roy Meissner <meissner@informatik.uni-leipzig.de>
+MAINTAINER Jaume Jordán <jjordan@dsic.upv.es>
+
+
+ARG BUILD_ENV=local
+ENV BUILD_ENV ${BUILD_ENV}
 
 # ---------------- #
 #   Installation   #
 # ---------------- #
 
 COPY requirements.txt ./
-RUN pip install --no-cache-dir -r requirements.txt
+RUN pip install -r requirements.txt
 
 COPY . .
 
@@ -14,7 +18,7 @@ COPY . .
 #   Configuration   #
 # ----------------- #
 
-EXPOSE 9000
+EXPOSE 80
 
 # ----------- #
 #   Cleanup   #
