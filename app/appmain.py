@@ -6,6 +6,8 @@ from flask import Flask, Blueprint
 from flask_restplus import Api, Resource, fields
 import sys
 
+from werkzeug.contrib.fixers import ProxyFix
+
 sys.path.append("/")
 
 from app.reco import recommender
@@ -56,7 +58,7 @@ def initialize_app(flask_app):
 
     @recommendation_namespace.route('/<int:user_id>')
     @api.response(404, 'User id not found.')
-    class CategoryCollection(Resource):
+    class UserRecommendation(Resource):
 
         @api.marshal_list_with(deck)
         def get(self, user_id):
@@ -91,7 +93,7 @@ def initialize_app(flask_app):
 def main():
     initialize_app(app)
     log.info('>>>>> Starting server at http://{}/reco/ <<<<<'.format(app.config['SERVER_NAME']))
-    app.run(debug=settings.FLASK_DEBUG, use_reloader=False)
+    app.run(host='0.0.0.0', port=80, debug=settings.FLASK_DEBUG, use_reloader=False)
 
 
 if __name__ == "__main__":

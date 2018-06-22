@@ -3,7 +3,7 @@
 
 [![Build Status](https://travis-ci.org/slidewiki/recommender-service.svg?branch=master)](https://travis-ci.org/slidewiki/recommender-service)
 [![License](https://img.shields.io/badge/License-MPL%202.0-green.svg)](https://github.com/slidewiki/microservice-template/blob/master/LICENSE)
-[![Language]](https://www.python.org/)
+[![made-with-python](https://img.shields.io/badge/Made%20with-Python-1f425f.svg)](https://www.python.org/)
 
 
 Recommender service using a RESTful API based on Flask-RESTPlus.
