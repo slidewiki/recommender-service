@@ -46,8 +46,11 @@ def initialize_app(flask_app):
 
     api.init_app(blueprint)
 
-    recommendation_namespace = api.namespace('userRecommendation',
-                                             description='Operations related to user recommendation')
+    recommendation_user_namespace = api.namespace('userRecommendation',
+                                                  description='Operations related to user recommendation')
+
+    recommendation_deck_namespace = api.namespace('deckRecommendation',
+                                                  description='Operations related to deck recommendation')
 
     deck = api.model('Recommended deck', {
         'id': fields.Integer(readOnly=True, required=True, description='The unique identifier of a deck'),
@@ -56,7 +59,7 @@ def initialize_app(flask_app):
         'value': fields.Float(description='Recommendation value'),
     })
 
-    @recommendation_namespace.route('/<int:user_id>')
+    @recommendation_user_namespace.route('/<int:user_id>')
     @api.response(404, 'User id not found.')
     class UserRecommendation(Resource):
 
@@ -86,7 +89,40 @@ def initialize_app(flask_app):
 
             return recommended_decks_list_dict
 
-    api.add_namespace(recommendation_namespace)
+    @recommendation_deck_namespace.route('/<int:deck_id>')
+    @api.response(404, 'User id not found.')
+    class DeckRecommendation(Resource):
+
+        @api.marshal_list_with(deck)
+        def get(self, deck_id):
+            """
+            Returns list of recommended decks for a user.
+            """
+            number_reco = 6
+            file_name_suffix = "Full1500"
+            rec = recommender.RecommenderSystem()
+
+            # check valid deck_id
+            deck_ids_positions = rec.load_dict("deck_ids_positionsContent" + file_name_suffix)
+            if str(deck_id) not in deck_ids_positions:
+                return None, 404
+
+            recommended_decks, reco_values = rec.get_recommendation_from_storage_only_content(rec, deck_id, number_reco,
+                                                                                 file_name_suffix)
+            all_data_dict = rec.load_dict("deckid_title_descrip")
+            recommended_decks_list_dict = []
+            cont = 0
+            for i in recommended_decks:
+                recommended_deck = all_data_dict[str(i)]
+                recommended_deck['value'] = reco_values[cont]
+                recommended_decks_list_dict.append(recommended_deck)
+                cont += 1
+
+            return recommended_decks_list_dict
+
+    api.add_namespace(recommendation_user_namespace)
+    api.add_namespace(recommendation_deck_namespace)
+
     flask_app.register_blueprint(blueprint)
 
 
