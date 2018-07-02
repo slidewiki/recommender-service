@@ -6,8 +6,6 @@ from flask import Flask, Blueprint
 from flask_restplus import Api, Resource, fields
 import sys
 
-from werkzeug.contrib.fixers import ProxyFix
-
 sys.path.append("/")
 
 from app.reco import recommender
