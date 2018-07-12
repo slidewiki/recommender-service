@@ -27,8 +27,6 @@ def update_all_recommendations(rec):
 def update_subset_content_recommendations(rec):
     main_start = time.time()
 
-    start = time.time()
-
     deck_ids = [1, 2, 3, 7, 10, 14, 183, 269, 292, 344, 475, 1071, 1091, 1092, 1095, 1200, 1202, 1203, 1235, 1236,
                 1238, 1281, 1284, 1285, 1286, 1366, 1367, 1368, 1369, 1370, 1371, 1372, 1373, 1436, 1437, 1438, 1439,
                 1441, 1442, 1443, 1444, 1445, 1446, 1447, 1465, 1468, 1469, 1470, 1471, 1472, 1473, 1474, 1475, 1476,
@@ -47,7 +45,8 @@ def update_subset_content_recommendations(rec):
     main_end_time = time.time() - main_start
     print(str(main_end_time) + " TOTAL elapsed time (seconds)")
 
+
 if __name__ == "__main__":
     rec = recommender.RecommenderSystem()
     update_all_recommendations(rec)
-    #update_subset_content_recommendations(rec)
+    # update_subset_content_recommendations(rec)

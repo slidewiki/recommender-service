@@ -10,7 +10,6 @@ sys.path.append("/")
 
 from app.reco import recommender
 
-
 app = Flask(__name__)
 logging_conf_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../logging.conf'))
 logging.config.fileConfig(logging_conf_path)
@@ -30,7 +29,6 @@ def initialize_app(flask_app):
 
     blueprint = Blueprint('reco', __name__, url_prefix='/reco')
 
-    log = logging.getLogger(__name__)
     api = Api(version='Beta', title='Recommender Service',
               description='Recommendation of SlideWiki decks')
 
@@ -70,12 +68,13 @@ def initialize_app(flask_app):
             file_name_suffix = "Full1500"
             rec = recommender.RecommenderSystem()
 
-            #check valid user_id
+            # check valid user_id
             user_ids_positions = rec.load_dict("user_ids_positions" + file_name_suffix)
             if str(user_id) not in user_ids_positions:
                 return None, 404
 
-            recommended_decks, reco_values = rec.get_recommendation_from_storage(rec, user_id, number_reco, file_name_suffix)
+            recommended_decks, reco_values = rec.get_recommendation_from_storage(rec, user_id, number_reco,
+                                                                                 file_name_suffix)
             all_data_dict = rec.load_dict("deckid_title_descrip")
             recommended_decks_list_dict = []
             cont = 0
@@ -88,13 +87,13 @@ def initialize_app(flask_app):
             return recommended_decks_list_dict
 
     @recommendation_deck_namespace.route('/<int:deck_id>')
-    @api.response(404, 'User id not found.')
+    @api.response(404, 'Deck id not found.')
     class DeckRecommendation(Resource):
 
         @api.marshal_list_with(deck)
         def get(self, deck_id):
             """
-            Returns list of recommended decks for a user.
+            Returns list of recommended decks for a deck (only content-based).
             """
             number_reco = 6
             file_name_suffix = "Full1500"
@@ -106,7 +105,7 @@ def initialize_app(flask_app):
                 return None, 404
 
             recommended_decks, reco_values = rec.get_recommendation_from_storage_only_content(rec, deck_id, number_reco,
-                                                                                 file_name_suffix)
+                                                                                              file_name_suffix)
             all_data_dict = rec.load_dict("deckid_title_descrip")
             recommended_decks_list_dict = []
             cont = 0

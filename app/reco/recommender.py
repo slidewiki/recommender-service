@@ -36,7 +36,7 @@ class RecommenderSystem(object):
 
         base_url = 'https://deckservice.experimental.slidewiki.org'
         url = base_url + "/decks?rootsOnly=false&idOnly=false&sort=id&page=" + str(page) + "&pageSize=" + str(page_size)
-        #TODO consider using rootsOnly=true
+        # TODO consider using rootsOnly=true
         while more_pages:
             r = requests.get(url)
 
@@ -361,7 +361,6 @@ class RecommenderSystem(object):
 
         return matrix, all_deck_ids_positions, real_deck_ids
 
-
     @staticmethod
     def user_profile_creation(rating_matrix, item_prof_matrix):
 
@@ -370,26 +369,6 @@ class RecommenderSystem(object):
         similarity = sklearn.metrics.pairwise.cosine_similarity(user_profile, item_prof_matrix, dense_output=True)
 
         return similarity
-
-    @staticmethod
-    def store_matrix(similarity, name):
-        similarity.dump(name)
-
-    @staticmethod
-    def load_matrix(name):
-        similarity = np.load(name)
-        return similarity
-
-    @staticmethod
-    def store_dict(my_dict, name):
-        with open(name + '.json', 'w') as f:
-            json.dump(my_dict, f)
-
-    @staticmethod
-    def load_dict(name):
-        with open(name + '.json') as f:
-            my_dict = json.load(f)
-        return my_dict
 
     @staticmethod
     def calculate_data_content_tfidfmatrix(self, deck_ids, max_features):
@@ -430,7 +409,7 @@ class RecommenderSystem(object):
         similarity = self.user_profile_creation(matrix_user_activities, matrix_tfidf)
         print(str(time.time() - start) + " user profile creation elapsed time (seconds)")
 
-        self.store_matrix(similarity, 'similarity' + file_name_suffix + '.dat')
+        self.store_matrix(similarity, 'similarity' + file_name_suffix)
         self.store_dict(user_ids_positions, 'user_ids_positions' + file_name_suffix)
         self.store_dict(real_deck_ids, 'real_deck_ids' + file_name_suffix)
 
@@ -445,7 +424,7 @@ class RecommenderSystem(object):
 
         similarity = sklearn.metrics.pairwise.cosine_similarity(deck_profile, matrix_tfidf, dense_output=True)
 
-        self.store_matrix(similarity, 'similarityContent' + file_name_suffix + '.dat')
+        self.store_matrix(similarity, 'similarityContent' + file_name_suffix)
         self.store_dict(deck_ids_positions, 'deck_ids_positionsContent' + file_name_suffix)
         self.store_dict(real_deck_ids, 'real_deck_idsContent' + file_name_suffix)
 
@@ -512,7 +491,7 @@ class RecommenderSystem(object):
     @staticmethod
     def get_recommendation_from_storage(self, user_id, number_reco, file_name_suffix):
 
-        similarity = self.load_matrix('similarity' + file_name_suffix + '.dat')
+        similarity = self.load_matrix('similarity' + file_name_suffix)
         user_ids_positions = self.load_dict('user_ids_positions' + file_name_suffix)
         real_deck_ids = self.load_dict('real_deck_ids' + file_name_suffix)
 
@@ -522,7 +501,7 @@ class RecommenderSystem(object):
         items_indexes, reco_values = self.recommendation(similarity, user_ids_positions, real_deck_ids, user_id,
                                                          number_reco, user_deck_ids)
 
-        print("Recommended decks for user_id "+str(user_id)+":")
+        print("Recommended decks for user_id " + str(user_id) + ":")
         print(items_indexes)
         print(reco_values)
 
@@ -531,15 +510,35 @@ class RecommenderSystem(object):
     @staticmethod
     def get_recommendation_from_storage_only_content(self, deck_id, number_reco, file_name_suffix):
 
-        similarity = self.load_matrix('similarityContent' + file_name_suffix + '.dat')
+        similarity = self.load_matrix('similarityContent' + file_name_suffix)
         deck_ids_positions = self.load_dict('deck_ids_positionsContent' + file_name_suffix)
         real_deck_ids = self.load_dict('real_deck_idsContent' + file_name_suffix)
 
         items_indexes, reco_values = self.recommendation_only_content(similarity, deck_ids_positions, real_deck_ids,
                                                                       deck_id, number_reco)
 
-        print("Recommended decks for deck_id "+str(deck_id)+":")
+        print("Recommended decks for deck_id " + str(deck_id) + ":")
         print(items_indexes)
         print(reco_values)
 
         return items_indexes, reco_values
+
+    @staticmethod
+    def store_matrix(matrix, name):
+        np.save(name, matrix)
+
+    @staticmethod
+    def load_matrix(name):
+        matrix = np.load(name + '.npy')
+        return matrix
+
+    @staticmethod
+    def store_dict(my_dict, name):
+        with open(name + '.json', 'w') as f:
+            json.dump(my_dict, f)
+
+    @staticmethod
+    def load_dict(name):
+        with open(name + '.json') as f:
+            my_dict = json.load(f)
+        return my_dict
