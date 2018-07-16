@@ -1,8 +1,7 @@
-import logging
 import logging.config
 import os
 import settings
-from flask import Flask, Blueprint
+from flask import Flask, Blueprint, request
 from flask_restplus import Api, Resource, fields
 import sys
 
@@ -27,10 +26,10 @@ def configure_app(flask_app):
 def initialize_app(flask_app):
     configure_app(flask_app)
 
-    blueprint = Blueprint('reco', __name__, url_prefix='/reco')
+    blueprint = Blueprint('reco', __name__)
 
     api = Api(version='Beta', title='Recommender Service',
-              description='Recommendation of SlideWiki decks')
+              description='Recommendation of SlideWiki decks', doc='/documentation')
 
     @api.errorhandler
     def default_error_handler(e):
@@ -57,14 +56,20 @@ def initialize_app(flask_app):
 
     @recommendation_user_namespace.route('/<int:user_id>')
     @api.response(404, 'User id not found.')
+    @api.doc(params={'user_id': 'The unique identifier of a user'})
+    @api.doc(params={'numberReco': 'Number of desired recommendations'})
     class UserRecommendation(Resource):
-
         @api.marshal_list_with(deck)
-        def get(self, user_id):
+        def get(self, user_id, number_reco=5):
             """
             Returns list of recommended decks for a user.
             """
-            number_reco = 6
+            if 'numberReco' in request.args:
+                try:
+                    number_reco = int(request.args['numberReco'])
+                except ValueError:
+                    pass
+
             file_name_suffix = "Full1500"
             rec = recommender.RecommenderSystem()
 
@@ -88,14 +93,20 @@ def initialize_app(flask_app):
 
     @recommendation_deck_namespace.route('/<int:deck_id>')
     @api.response(404, 'Deck id not found.')
+    @api.doc(params={'deck_id': 'The unique identifier of a deck'})
+    @api.doc(params={'numberReco': 'Number of desired recommendations'})
     class DeckRecommendation(Resource):
 
         @api.marshal_list_with(deck)
-        def get(self, deck_id):
+        def get(self, deck_id, number_reco=5):
             """
             Returns list of recommended decks for a deck (only content-based).
             """
-            number_reco = 6
+            if 'numberReco' in request.args:
+                try:
+                    number_reco = int(request.args['numberReco'])
+                except ValueError:
+                    pass
             file_name_suffix = "Full1500"
             rec = recommender.RecommenderSystem()
 
@@ -125,7 +136,7 @@ def initialize_app(flask_app):
 
 def main():
     initialize_app(app)
-    log.info('>>>>> Starting server at http://{}/reco/ <<<<<'.format(app.config['SERVER_NAME']))
+    log.info('>>>>> Starting server at http://{}/ <<<<<'.format(app.config['SERVER_NAME']))
     app.run(host='0.0.0.0', port=80, debug=settings.FLASK_DEBUG, use_reloader=False)
 
 
