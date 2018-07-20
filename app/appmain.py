@@ -51,6 +51,12 @@ def initialize_app(flask_app):
         'id': fields.Integer(readOnly=True, required=True, description='The unique identifier of a deck'),
         'title': fields.String(description='Deck title'),
         'description': fields.String(description='Deck description'),
+        'firstSlide': fields.String(description='First Slide ID'),
+        'authorId': fields.Integer(description='Author ID'),
+        'author': fields.String(description='Author username'),
+        'date': fields.String(description='Date of last update'),
+        'likes': fields.Integer(description='Number of likes'),
+        'downloads': fields.Integer(description='Number of downloads'),
         'value': fields.Float(description='Recommendation value'),
     })
 
@@ -81,11 +87,14 @@ def initialize_app(flask_app):
             recommended_decks, reco_values = rec.get_recommendation_from_storage(rec, user_id, number_reco,
                                                                                  file_name_suffix)
             all_data_dict = rec.load_dict("deckid_title_descrip")
+            likes_downloads = rec.load_dict("likes_downloads")
             recommended_decks_list_dict = []
             cont = 0
             for i in recommended_decks:
                 recommended_deck = all_data_dict[str(i)]
                 recommended_deck['value'] = reco_values[cont]
+                recommended_deck['likes'] = likes_downloads[str(i)]['likes']
+                recommended_deck['downloads'] = likes_downloads[str(i)]['downloads']
                 recommended_decks_list_dict.append(recommended_deck)
                 cont += 1
 
@@ -118,11 +127,14 @@ def initialize_app(flask_app):
             recommended_decks, reco_values = rec.get_recommendation_from_storage_only_content(rec, deck_id, number_reco,
                                                                                               file_name_suffix)
             all_data_dict = rec.load_dict("deckid_title_descrip")
+            likes_downloads = rec.load_dict("likes_downloads")
             recommended_decks_list_dict = []
             cont = 0
             for i in recommended_decks:
                 recommended_deck = all_data_dict[str(i)]
                 recommended_deck['value'] = reco_values[cont]
+                recommended_deck['likes'] = likes_downloads[str(i)]['likes']
+                recommended_deck['downloads'] = likes_downloads[str(i)]['downloads']
                 recommended_decks_list_dict.append(recommended_deck)
                 cont += 1
 

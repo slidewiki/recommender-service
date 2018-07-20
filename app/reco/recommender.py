@@ -26,8 +26,6 @@ class RecommenderSystem(object):
     @staticmethod
     def get_all_decks_ids_pagination():
         all_decks_ids = []
-        all_decks_titles = []
-        all_decks_descriptions = []
         all_data_dict = {}
 
         page = 1
@@ -35,7 +33,7 @@ class RecommenderSystem(object):
         more_pages = True
 
         base_url = 'https://deckservice.experimental.slidewiki.org'
-        url = base_url + "/decks?rootsOnly=false&idOnly=false&sort=id&page=" + str(page) + "&pageSize=" + str(page_size)
+        url = base_url + "/decks?rootsOnly=false&idOnly=false&status=public&sort=id&page=" + str(page) + "&pageSize=" + str(page_size)
         # TODO consider using rootsOnly=true
         while more_pages:
             r = requests.get(url)
@@ -46,18 +44,28 @@ class RecommenderSystem(object):
                     url = base_url + result_json['_meta']['links']['next']
                 else:
                     more_pages = False
-
-                if len(result_json['items']) > 0:
-                    for item in result_json['items']:
-                        all_decks_ids.append(item['_id'])
-                        all_decks_titles.append(item['title'])
-                        all_decks_descriptions.append(item['description'])
-                        all_data_dict[item['_id']] = {'id': item['_id'], 'title': item['title'],
-                                                      'description': item['description']}
+                try:
+                    if len(result_json['items']) > 0:
+                        for item in result_json['items']:
+                            all_decks_ids.append(item['_id'])
+                            first_slide, date, author_id = "", "", ""
+                            if item.get('firstSlide', 0) != 0:
+                                first_slide = item['firstSlide']
+                            if item.get('lastUpdate', 0) != 0:
+                                date = item['lastUpdate']
+                            if item.get('owner', 0) != 0:
+                                author_id = item['owner']
+                            all_data_dict[item['_id']] = {'id': item['_id'], 'title': item['title'],
+                                                          'description': item['description'],
+                                                          'firstSlide': first_slide,
+                                                          'date': date,
+                                                          'authorId': author_id}
+                except:
+                    print("Parsing error url= "+url)
             except:
-                print("Unexpected json response")
+                print("Unexpected json response url= "+url)
 
-        return all_decks_ids, all_decks_titles, all_decks_descriptions, all_data_dict
+        return all_decks_ids, all_data_dict
 
     @staticmethod
     def get_decks_user(user_id):
@@ -283,6 +291,7 @@ class RecommenderSystem(object):
     def get_user_activities_from_deck(deck_id):
         print("retrieving user activities from deck=" + str(deck_id))
         activities = {}
+        likes, downloads = 0, 0
         url = 'https://activitiesservice.experimental.slidewiki.org/activities/deck/'
         try:
             r = requests.get(url + str(deck_id))
@@ -294,15 +303,24 @@ class RecommenderSystem(object):
                 user_id = activity['user_id']
                 if user_id not in activities:
                     activities[user_id] = {deck_id: None}
+                if activity['activity_type'] == 'react':
+                    print('liked deck {}'.format(deck_id))
+                    likes += 1
+                if activity['activity_type'] == 'download':
+                    print('downloaded deck {}'.format(deck_id))
+                    downloads += 1
+
         except:
             print("Unexpected json response")
 
-        return activities
+        return activities, likes, downloads
 
     def get_all_users_activities_from_decks(self, deck_ids):
         all_activities = {}
+        likes_downloads = {}
         for deck_id in deck_ids:
-            acts = self.get_user_activities_from_deck(deck_id)
+            acts, likes, downloads = self.get_user_activities_from_deck(deck_id)
+            likes_downloads[deck_id] = {'likes': likes, 'downloads': downloads}
             for user_id in acts.keys():
 
                 if user_id not in all_activities:
@@ -310,7 +328,7 @@ class RecommenderSystem(object):
                 else:
                     all_activities[user_id].update({deck_id: None})
 
-        return all_activities, all_activities.keys()
+        return all_activities, all_activities.keys(), likes_downloads
 
     @staticmethod
     def build_user_activity_matrix(all_activities, user_ids, deck_ids):
@@ -394,7 +412,8 @@ class RecommenderSystem(object):
         matrix_tfidf, used_deck_ids = self.calculate_data_content_tfidfmatrix(self, deck_ids, max_features)
 
         start = time.time()
-        all_users_activities, user_ids = self.get_all_users_activities_from_decks(used_deck_ids)
+        all_users_activities, user_ids, likes_downloads = self.get_all_users_activities_from_decks(used_deck_ids)
+        self.store_dict(likes_downloads, "likes_downloads")
         print(str(time.time() - start) + " get user activities elapsed time (seconds)")
 
         start = time.time()

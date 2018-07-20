@@ -6,9 +6,10 @@ def update_all_recommendations(rec):
     main_start = time.time()
 
     start = time.time()
-    deck_ids, all_decks_titles, all_decks_descriptions, all_data_dict = rec.get_all_decks_ids_pagination()
+    deck_ids, all_data_dict = rec.get_all_decks_ids_pagination()
     rec.store_dict(all_data_dict, "deckid_title_descrip")
     time_get_decks = time.time() - start
+    print('{} obtained deck ids'.format(len(deck_ids)))
     print(str(time_get_decks) + " get deck ids elapsed time (seconds)")
 
     max_features = 1500
