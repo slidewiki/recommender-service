@@ -43,9 +43,10 @@ def initialize_app(flask_app):
 
     recommendation_user_namespace = api.namespace('userRecommendation',
                                                   description='Operations related to user recommendation')
-
     recommendation_deck_namespace = api.namespace('deckRecommendation',
                                                   description='Operations related to deck recommendation')
+    recommendation_mixed_namespace = api.namespace('deckUserRecommendation',
+                                                   description='Operations related to deck user recommendation')
 
     deck = api.model('Recommended deck', {
         'id': fields.Integer(readOnly=True, required=True, description='The unique identifier of a deck'),
@@ -126,6 +127,7 @@ def initialize_app(flask_app):
 
             recommended_decks, reco_values = rec.get_recommendation_from_storage_only_content(rec, deck_id, number_reco,
                                                                                               file_name_suffix)
+
             all_data_dict = rec.load_dict("deckid_title_descrip")
             likes_downloads = rec.load_dict("likes_downloads")
             recommended_decks_list_dict = []
@@ -140,8 +142,84 @@ def initialize_app(flask_app):
 
             return recommended_decks_list_dict
 
+    @recommendation_mixed_namespace.route('/<int:deck_id>')
+    @api.response(404, 'Deck id not found.')
+    @api.response(405, 'User id not found.')
+    @api.doc(params={'deck_id': 'The unique identifier of a deck'})
+    @api.doc(params={'user_id': 'The unique identifier of a user'})
+    @api.doc(params={'numberReco': 'Number of desired recommendations'})
+    class DeckUserRecommendation(Resource):
+
+        @api.marshal_list_with(deck)
+        def get(self, deck_id, user_id=0, number_reco=5):
+            """
+            Returns list of recommended decks for a deck (only content-based) and a user.
+            """
+            if 'user_id' in request.args:
+                try:
+                    user_id = int(request.args['user_id'])
+                except ValueError:
+                    return None, 405
+            if 'numberReco' in request.args:
+                try:
+                    number_reco = int(request.args['numberReco'])
+                except ValueError:
+                    pass
+            file_name_suffix = "Full1500"
+            rec = recommender.RecommenderSystem()
+
+            # check valid deck_id
+            deck_ids_positions = rec.load_dict("deck_ids_positionsContent" + file_name_suffix)
+            if str(deck_id) not in deck_ids_positions:
+                return None, 404
+            # check valid user_id
+            user_ids_positions = rec.load_dict("user_ids_positions" + file_name_suffix)
+            if str(user_id) not in user_ids_positions:
+                return None, 405
+
+            recommended_decks_deck, reco_values_deck = rec.get_recommendation_from_storage_only_content(rec, deck_id,
+                                                                                                        number_reco,
+                                                                                                        file_name_suffix)
+            recommended_decks_user, reco_values_user = rec.get_recommendation_from_storage(rec, user_id, number_reco,
+                                                                                           file_name_suffix)
+            all_data_dict = rec.load_dict("deckid_title_descrip")
+            likes_downloads = rec.load_dict("likes_downloads")
+            recommended_decks_list_dict_deck = []
+            cont = 0
+            for i in recommended_decks_deck:
+                recommended_deck = all_data_dict[str(i)]
+                recommended_deck['value'] = reco_values_deck[cont]
+                recommended_deck['likes'] = likes_downloads[str(i)]['likes']
+                recommended_deck['downloads'] = likes_downloads[str(i)]['downloads']
+                recommended_decks_list_dict_deck.append(recommended_deck)
+                cont += 1
+            cont = 0
+            recommended_decks_list_dict_user = []
+            for i in recommended_decks_user:
+                recommended_deck = all_data_dict[str(i)]
+                recommended_deck['value'] = reco_values_user[cont]
+                recommended_deck['likes'] = likes_downloads[str(i)]['likes']
+                recommended_deck['downloads'] = likes_downloads[str(i)]['downloads']
+                recommended_decks_list_dict_user.append(recommended_deck)
+                cont += 1
+
+            recommended_decks_list_dict = []
+            deck_reco_count, user_reco_count, n_reco = 0, 0, 0
+            while n_reco < number_reco:
+                if deck_reco_count < len(recommended_decks_list_dict_deck):
+                    recommended_decks_list_dict.append(recommended_decks_list_dict_deck[deck_reco_count])
+                    deck_reco_count += 1
+                    n_reco += 1
+                if user_reco_count < len(recommended_decks_list_dict_user) and n_reco < number_reco:
+                    recommended_decks_list_dict.append(recommended_decks_list_dict_user[user_reco_count])
+                    user_reco_count += 1
+                    n_reco += 1
+
+            return recommended_decks_list_dict
+
     api.add_namespace(recommendation_user_namespace)
     api.add_namespace(recommendation_deck_namespace)
+    api.add_namespace(recommendation_mixed_namespace)
 
     flask_app.register_blueprint(blueprint)
 
@@ -149,7 +227,7 @@ def initialize_app(flask_app):
 def main():
     initialize_app(app)
     log.info('>>>>> Starting server at http://{}/ <<<<<'.format(app.config['SERVER_NAME']))
-    app.run(host='0.0.0.0', port=80, debug=settings.FLASK_DEBUG, use_reloader=False)
+    app.run(host='0.0.0.0', port=8000, debug=settings.FLASK_DEBUG, use_reloader=False)
 
 
 if __name__ == "__main__":
