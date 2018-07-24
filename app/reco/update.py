@@ -6,7 +6,7 @@ def update_all_recommendations(rec):
     main_start = time.time()
 
     start = time.time()
-    deck_ids, all_data_dict = rec.get_all_decks_ids_pagination()
+    deck_ids, all_data_dict = rec.get_all_decks_ids_pagination(rec)
     rec.store_dict(all_data_dict, "deckid_title_descrip")
     time_get_decks = time.time() - start
     print('{} obtained deck ids'.format(len(deck_ids)))

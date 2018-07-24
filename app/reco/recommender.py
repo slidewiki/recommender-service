@@ -23,8 +23,7 @@ class RecommenderSystem(object):
     def __init__(self):
         print()
 
-    @staticmethod
-    def get_all_decks_ids_pagination():
+    def get_all_decks_ids_pagination(self):
         all_decks_ids = []
         all_data_dict = {}
 
@@ -48,24 +47,38 @@ class RecommenderSystem(object):
                     if len(result_json['items']) > 0:
                         for item in result_json['items']:
                             all_decks_ids.append(item['_id'])
-                            first_slide, date, author_id = "", "", ""
+                            first_slide, date, author_id, author = "", "", "", ""
                             if item.get('firstSlide', 0) != 0:
                                 first_slide = item['firstSlide']
                             if item.get('lastUpdate', 0) != 0:
                                 date = item['lastUpdate']
                             if item.get('owner', 0) != 0:
                                 author_id = item['owner']
+                                author = self.get_user_name(author_id)
                             all_data_dict[item['_id']] = {'id': item['_id'], 'title': item['title'],
                                                           'description': item['description'],
                                                           'firstSlide': first_slide,
                                                           'date': date,
-                                                          'authorId': author_id}
+                                                          'authorId': author_id,
+                                                          'author': author}
                 except:
                     print("Parsing error url= "+url)
             except:
                 print("Unexpected json response url= "+url)
 
         return all_decks_ids, all_data_dict
+
+    @staticmethod
+    def get_user_name(user_id):
+        base_url = 'https://userservice.experimental.slidewiki.org'
+        url = base_url + '/user/' + str(user_id)
+        try:
+            r = requests.get(url)
+            result_json = r.json()
+            return result_json['username']
+        except:
+            print('Unexpected json response')
+            return ''
 
     @staticmethod
     def get_decks_user(user_id):
