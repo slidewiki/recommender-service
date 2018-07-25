@@ -21,11 +21,12 @@ import sys
 
 class RecommenderSystem(object):
     def __init__(self):
-        print()
+        print('Recommender object created')
 
     def get_all_decks_ids_pagination(self):
         all_decks_ids = []
         all_data_dict = {}
+        names_dict = {}
 
         page = 1
         page_size = 1000
@@ -35,6 +36,7 @@ class RecommenderSystem(object):
         url = base_url + "/decks?rootsOnly=false&idOnly=false&status=public&sort=id&page=" + str(page) + "&pageSize=" + str(page_size)
         # consider using rootsOnly=true
         while more_pages:
+            print('Getting decks and info. Requesting {}'.format(url))
             r = requests.get(url)
 
             try:
@@ -54,7 +56,7 @@ class RecommenderSystem(object):
                                 date = item['lastUpdate']
                             if item.get('owner', 0) != 0:
                                 author_id = item['owner']
-                                author = self.get_display_name_or_user_name(author_id)
+                                names_dict, author = self.get_display_name_or_user_name(names_dict, author_id)
                             all_data_dict[item['_id']] = {'id': item['_id'], 'title': item['title'],
                                                           'description': item['description'],
                                                           'firstSlide': first_slide,
@@ -69,20 +71,24 @@ class RecommenderSystem(object):
         return all_decks_ids, all_data_dict
 
     @staticmethod
-    def get_display_name_or_user_name(user_id):
+    def get_display_name_or_user_name(names_dict, user_id):
+        if user_id in names_dict:
+            return names_dict, names_dict[user_id]
         base_url = 'https://userservice.experimental.slidewiki.org'
         url = base_url + '/user/' + str(user_id)
         try:
             r = requests.get(url)
             result_json = r.json()
             if 'displayName' in result_json and result_json['displayName']:
-                return result_json['displayName']
+                names_dict[user_id] = result_json['displayName']
+                return names_dict, result_json['displayName']
             elif 'username' in result_json and result_json['username']:
-                return result_json['username']
-            return ''
+                names_dict[user_id] = result_json['username']
+                return names_dict, result_json['username']
+            return names_dict, ''
         except:
-            print('Unexpected json response' + url)
-            return ''
+            print('Unexpected json response url= ' + url)
+            return names_dict, ''
 
     @staticmethod
     def get_decks_user(user_id):
@@ -110,7 +116,7 @@ class RecommenderSystem(object):
                     for item in result_json['items']:
                         decks_ids.append(item['_id'])
             except:
-                print("Unexpected json response")
+                print("Unexpected json response url= " + url)
 
         return decks_ids
 
@@ -146,7 +152,7 @@ class RecommenderSystem(object):
         try:
             result_json = r.json()
         except:
-            print("Unexpected json response")
+            print("Unexpected json response url= " + url)
             return [], []
 
         # "TFIDF_tokens_languagedependent"
@@ -159,7 +165,7 @@ class RecommenderSystem(object):
         valuesNormalized = []
         try:
             if len(result_json['tfidfResult']) == 0:
-                print("********* empty")
+                print("empty NLP")
                 return tokens, valuesNormalized
 
             tokens_language_dependent = result_json['tfidfResult']['tfidfMap']['TFIDF_tokens_languagedependent']
@@ -321,10 +327,8 @@ class RecommenderSystem(object):
                 if user_id not in activities:
                     activities[user_id] = {deck_id: None}
                 if activity['activity_type'] == 'react':
-                    print('liked deck {}'.format(deck_id))
                     likes += 1
                 if activity['activity_type'] == 'download':
-                    print('downloaded deck {}'.format(deck_id))
                     downloads += 1
 
         except:
