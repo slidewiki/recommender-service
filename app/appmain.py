@@ -204,13 +204,19 @@ def initialize_app(flask_app):
                 cont += 1
 
             recommended_decks_list_dict = []
+            recommended_decks_ids = []
             deck_reco_count, user_reco_count, n_reco = 0, 0, 0
             while n_reco < number_reco:
-                if deck_reco_count < len(recommended_decks_list_dict_deck):
+                if deck_reco_count < len(recommended_decks_list_dict_deck) and \
+                        recommended_decks_list_dict_deck[deck_reco_count]['id'] not in recommended_decks_ids:
+                    recommended_decks_ids.append(recommended_decks_list_dict_deck[deck_reco_count]['id'])
                     recommended_decks_list_dict.append(recommended_decks_list_dict_deck[deck_reco_count])
                     deck_reco_count += 1
                     n_reco += 1
-                if user_reco_count < len(recommended_decks_list_dict_user) and n_reco < number_reco:
+                if user_reco_count < len(recommended_decks_list_dict_user) and \
+                        recommended_decks_list_dict_user[user_reco_count]['id'] not in recommended_decks_ids and \
+                        n_reco < number_reco:
+                    recommended_decks_ids.append(recommended_decks_list_dict_user[user_reco_count]['id'])
                     recommended_decks_list_dict.append(recommended_decks_list_dict_user[user_reco_count])
                     user_reco_count += 1
                     n_reco += 1
