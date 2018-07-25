@@ -142,19 +142,26 @@ def initialize_app(flask_app):
 
             return recommended_decks_list_dict
 
+    parser = api.parser()
+    parser.add_argument('user_id', type=int, required=True, help='The unique identifier of a user')
+    parser.add_argument('numberReco', type=int, help='Number of desired recommendations')
+
     @recommendation_mixed_namespace.route('/<int:deck_id>')
     @api.response(404, 'Deck id not found.')
     @api.response(405, 'User id not found.')
     @api.doc(params={'deck_id': 'The unique identifier of a deck'})
-    @api.doc(params={'user_id': 'The unique identifier of a user'})
-    @api.doc(params={'numberReco': 'Number of desired recommendations'})
     class DeckUserRecommendation(Resource):
-
+        @api.doc(parser=parser)
         @api.marshal_list_with(deck)
-        def get(self, deck_id, user_id=0, number_reco=5):
+        def get(self, deck_id, number_reco=5):
             """
             Returns list of recommended decks for a deck (only content-based) and a user.
             """
+            if 'deck_id' in request.args:
+                try:
+                    deck_id = int(request.args['deck_id'])
+                except ValueError:
+                    return None, 404
             if 'user_id' in request.args:
                 try:
                     user_id = int(request.args['user_id'])
