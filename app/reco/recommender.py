@@ -33,7 +33,7 @@ class RecommenderSystem(object):
 
         base_url = 'https://deckservice.experimental.slidewiki.org'
         url = base_url + "/decks?rootsOnly=false&idOnly=false&status=public&sort=id&page=" + str(page) + "&pageSize=" + str(page_size)
-        # TODO consider using rootsOnly=true
+        # consider using rootsOnly=true
         while more_pages:
             r = requests.get(url)
 
@@ -54,7 +54,7 @@ class RecommenderSystem(object):
                                 date = item['lastUpdate']
                             if item.get('owner', 0) != 0:
                                 author_id = item['owner']
-                                author = self.get_user_name(author_id)
+                                author = self.get_display_name_or_user_name(author_id)
                             all_data_dict[item['_id']] = {'id': item['_id'], 'title': item['title'],
                                                           'description': item['description'],
                                                           'firstSlide': first_slide,
@@ -69,15 +69,19 @@ class RecommenderSystem(object):
         return all_decks_ids, all_data_dict
 
     @staticmethod
-    def get_user_name(user_id):
+    def get_display_name_or_user_name(user_id):
         base_url = 'https://userservice.experimental.slidewiki.org'
         url = base_url + '/user/' + str(user_id)
         try:
             r = requests.get(url)
             result_json = r.json()
-            return result_json['username']
+            if 'displayName' in result_json and result_json['displayName']:
+                return result_json['displayName']
+            elif 'username' in result_json and result_json['username']:
+                return result_json['username']
+            return ''
         except:
-            print('Unexpected json response')
+            print('Unexpected json response' + url)
             return ''
 
     @staticmethod
