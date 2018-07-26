@@ -213,6 +213,18 @@ def initialize_app(flask_app):
             recommended_decks_list_dict = []
             recommended_decks_ids = []
             deck_reco_count, user_reco_count, n_reco = 0, 0, 0
+
+            intersection = [value for value in recommended_decks_deck if value in recommended_decks_user]
+            for reco_deck_id in intersection:
+                recommended_decks_ids.append(reco_deck_id)
+                for i in range(0, len(recommended_decks_list_dict_deck)):
+                    reco_deck = {}
+                    if recommended_decks_list_dict_deck[i]['id'] == reco_deck_id:
+                        reco_deck = recommended_decks_list_dict_deck[i]
+                        break
+                recommended_decks_list_dict.append(reco_deck)
+                n_reco += 1
+
             while n_reco < number_reco:
                 if deck_reco_count < len(recommended_decks_list_dict_deck) and \
                         recommended_decks_list_dict_deck[deck_reco_count]['id'] not in recommended_decks_ids:
