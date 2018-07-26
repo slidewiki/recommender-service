@@ -85,8 +85,8 @@ def initialize_app(flask_app):
             if str(user_id) not in user_ids_positions:
                 return None, 404
 
-            recommended_decks, reco_values = rec.get_recommendation_from_storage(rec, user_id, number_reco,
-                                                                                 file_name_suffix)
+            recommended_decks, reco_values = rec.user_recommendation_from_storage(rec, user_id, number_reco,
+                                                                                  file_name_suffix)
             all_data_dict = rec.load_dict("deckid_title_descrip")
             likes_downloads = rec.load_dict("likes_downloads")
             recommended_decks_list_dict = []
@@ -125,8 +125,8 @@ def initialize_app(flask_app):
             if str(deck_id) not in deck_ids_positions:
                 return None, 404
 
-            recommended_decks, reco_values = rec.get_recommendation_from_storage_only_content(rec, deck_id, number_reco,
-                                                                                              file_name_suffix)
+            recommended_decks, reco_values = rec.deck_recommendation_from_storage(rec, deck_id, number_reco,
+                                                                                  file_name_suffix)
 
             all_data_dict = rec.load_dict("deckid_title_descrip")
             likes_downloads = rec.load_dict("likes_downloads")
@@ -184,11 +184,11 @@ def initialize_app(flask_app):
             if str(user_id) not in user_ids_positions:
                 return None, 405
 
-            recommended_decks_deck, reco_values_deck = rec.get_recommendation_from_storage_only_content(rec, deck_id,
-                                                                                                        number_reco,
-                                                                                                        file_name_suffix)
-            recommended_decks_user, reco_values_user = rec.get_recommendation_from_storage(rec, user_id, number_reco,
-                                                                                           file_name_suffix)
+            recommended_decks_deck, reco_values_deck = rec.deck_recommendation_from_storage(rec, deck_id,
+                                                                                            number_reco,
+                                                                                            file_name_suffix)
+            recommended_decks_user, reco_values_user = rec.user_recommendation_from_storage(rec, user_id, number_reco,
+                                                                                            file_name_suffix)
             all_data_dict = rec.load_dict("deckid_title_descrip")
             likes_downloads = rec.load_dict("likes_downloads")
             recommended_decks_list_dict_deck = []

@@ -16,8 +16,51 @@ def update_all_recommendations(rec):
     file_name_suffix = 'Full' + str(max_features)
 
     start = time.time()
-    rec.calculate_data_recommendation(rec, deck_ids, max_features, file_name_suffix)
-    rec.calculate_data_recommendation_only_content(rec, deck_ids, max_features, file_name_suffix)
+    rec.calculate_data_recommendation_all(rec, deck_ids, max_features, file_name_suffix)
+    end = time.time()
+    print(str(end - start) + " get data elapsed time (seconds)")
+
+    main_end_time = time.time() - main_start
+    print(str(main_end_time) + " TOTAL elapsed time (seconds)")
+
+
+def update_user_recommendations(rec):
+    main_start = time.time()
+
+    start = time.time()
+    deck_ids, all_data_dict = rec.get_all_decks_ids_pagination()
+    rec.store_dict(all_data_dict, "deckid_title_descrip")
+    time_get_decks = time.time() - start
+    print('{} obtained deck ids'.format(len(deck_ids)))
+    print(str(time_get_decks) + " get deck ids elapsed time (seconds)")
+
+    max_features = 1500
+    file_name_suffix = 'Full' + str(max_features)
+
+    start = time.time()
+    rec.calculate_data_recommendation_user(rec, deck_ids, max_features, file_name_suffix)
+    end = time.time()
+    print(str(end - start) + " get data elapsed time (seconds)")
+
+    main_end_time = time.time() - main_start
+    print(str(main_end_time) + " TOTAL elapsed time (seconds)")
+
+
+def update_deck_recommendations(rec):
+    main_start = time.time()
+
+    start = time.time()
+    deck_ids, all_data_dict = rec.get_all_decks_ids_pagination()
+    rec.store_dict(all_data_dict, "deckid_title_descrip")
+    time_get_decks = time.time() - start
+    print('{} obtained deck ids'.format(len(deck_ids)))
+    print(str(time_get_decks) + " get deck ids elapsed time (seconds)")
+
+    max_features = 1500
+    file_name_suffix = 'Full' + str(max_features)
+
+    start = time.time()
+    rec.calculate_data_recommendation_deck(rec, deck_ids, max_features, file_name_suffix)
     end = time.time()
     print(str(end - start) + " get data elapsed time (seconds)")
 
@@ -39,7 +82,7 @@ def update_subset_content_recommendations(rec):
     file_name_suffix = 'Full' + str(max_features)
 
     start = time.time()
-    rec.calculate_data_recommendation_only_content(rec, deck_ids, max_features, file_name_suffix)
+    rec.calculate_data_recommendation_deck(rec, deck_ids, max_features, file_name_suffix)
     end = time.time()
     print(str(end - start) + " get data elapsed time (seconds)")
 

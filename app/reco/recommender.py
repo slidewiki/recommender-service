@@ -428,7 +428,7 @@ class RecommenderSystem(object):
         return matrix_tfidf, used_deck_ids
 
     @staticmethod
-    def calculate_data_recommendation(self, deck_ids, max_features, file_name_suffix):
+    def calculate_data_recommendation_user(self, deck_ids, max_features, file_name_suffix):
 
         matrix_tfidf, used_deck_ids = self.calculate_data_content_tfidfmatrix(self, deck_ids, max_features)
 
@@ -454,7 +454,7 @@ class RecommenderSystem(object):
         self.store_dict(real_deck_ids, 'real_deck_ids' + file_name_suffix)
 
     @staticmethod
-    def calculate_data_recommendation_only_content(self, deck_ids, max_features, file_name_suffix):
+    def calculate_data_recommendation_deck(self, deck_ids, max_features, file_name_suffix):
 
         matrix_tfidf, used_deck_ids = self.calculate_data_content_tfidfmatrix(self, deck_ids, max_features)
 
@@ -469,7 +469,37 @@ class RecommenderSystem(object):
         self.store_dict(real_deck_ids, 'real_deck_idsContent' + file_name_suffix)
 
     @staticmethod
-    def recommendation(similarity, user_ids_positions, real_deck_ids, user_id, number_recom, user_deck_ids):
+    def calculate_data_recommendation_all(self, deck_ids, max_features, file_name_suffix):
+        # common data: matrix_tfidf
+        matrix_tfidf, used_deck_ids = self.calculate_data_content_tfidfmatrix(self, deck_ids, max_features)
+
+        # DECK recommendation, a.k.a. only content recommendation
+        matrix_deck, deck_ids_positions, real_deck_ids = self.build_deck2deck_matrix(used_deck_ids)
+        deck_profile = dot(matrix_deck, matrix_tfidf) / linalg.norm(matrix_deck) / linalg.norm(matrix_tfidf)
+        similarity = sklearn.metrics.pairwise.cosine_similarity(deck_profile, matrix_tfidf, dense_output=True)
+        self.store_matrix(similarity, 'similarityContent' + file_name_suffix)
+        self.store_dict(deck_ids_positions, 'deck_ids_positionsContent' + file_name_suffix)
+        self.store_dict(real_deck_ids, 'real_deck_idsContent' + file_name_suffix)
+
+        # USER recommendation
+        # get user activities for user recommendation
+        start = time.time()
+        all_users_activities, user_ids, likes_downloads = self.get_all_users_activities_from_decks(used_deck_ids)
+        self.store_dict(likes_downloads, "likes_downloads")
+        print(str(time.time() - start) + " get user activities elapsed time (seconds)")
+
+        matrix_user_activities, user_ids_positions, real_deck_ids = self.build_user_activity_matrix(
+            all_users_activities,
+            user_ids, used_deck_ids)
+        print("shape matrix user activities: " + str(matrix_user_activities.shape))
+
+        similarity = self.user_profile_creation(matrix_user_activities, matrix_tfidf)
+        self.store_matrix(similarity, 'similarity' + file_name_suffix)
+        self.store_dict(user_ids_positions, 'user_ids_positions' + file_name_suffix)
+        self.store_dict(real_deck_ids, 'real_deck_ids' + file_name_suffix)
+
+    @staticmethod
+    def user_recommendation(similarity, user_ids_positions, real_deck_ids, user_id, number_recom, user_deck_ids):
 
         user_id_position = user_ids_positions[str(user_id)]
 
@@ -499,7 +529,7 @@ class RecommenderSystem(object):
         return recommended_deck_ids, reco_values
 
     @staticmethod
-    def recommendation_only_content(similarity, deck_ids_positions, real_deck_ids, deck_id, number_recom):
+    def deck_recommendation(similarity, deck_ids_positions, real_deck_ids, deck_id, number_recom):
 
         deck_id_position = deck_ids_positions[str(deck_id)]
 
@@ -529,7 +559,7 @@ class RecommenderSystem(object):
         return recommended_deck_ids, reco_values
 
     @staticmethod
-    def get_recommendation_from_storage(self, user_id, number_reco, file_name_suffix):
+    def user_recommendation_from_storage(self, user_id, number_reco, file_name_suffix):
 
         similarity = self.load_matrix('similarity' + file_name_suffix)
         user_ids_positions = self.load_dict('user_ids_positions' + file_name_suffix)
@@ -538,8 +568,8 @@ class RecommenderSystem(object):
         # estimated time 0.5s
         user_deck_ids = self.get_decks_user(user_id)
 
-        items_indexes, reco_values = self.recommendation(similarity, user_ids_positions, real_deck_ids, user_id,
-                                                         number_reco, user_deck_ids)
+        items_indexes, reco_values = self.user_recommendation(similarity, user_ids_positions, real_deck_ids, user_id,
+                                                              number_reco, user_deck_ids)
 
         print("Recommended decks for user_id " + str(user_id) + ":")
         print(items_indexes)
@@ -548,14 +578,14 @@ class RecommenderSystem(object):
         return items_indexes, reco_values
 
     @staticmethod
-    def get_recommendation_from_storage_only_content(self, deck_id, number_reco, file_name_suffix):
+    def deck_recommendation_from_storage(self, deck_id, number_reco, file_name_suffix):
 
         similarity = self.load_matrix('similarityContent' + file_name_suffix)
         deck_ids_positions = self.load_dict('deck_ids_positionsContent' + file_name_suffix)
         real_deck_ids = self.load_dict('real_deck_idsContent' + file_name_suffix)
 
-        items_indexes, reco_values = self.recommendation_only_content(similarity, deck_ids_positions, real_deck_ids,
-                                                                      deck_id, number_reco)
+        items_indexes, reco_values = self.deck_recommendation(similarity, deck_ids_positions, real_deck_ids,
+                                                              deck_id, number_reco)
 
         print("Recommended decks for deck_id " + str(deck_id) + ":")
         print(items_indexes)
