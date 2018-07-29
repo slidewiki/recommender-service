@@ -93,4 +93,5 @@ def update_subset_content_recommendations(rec):
 if __name__ == "__main__":
     rec = recommender.RecommenderSystem()
     update_all_recommendations(rec)
+    # update_deck_recommendations(rec)
     # update_subset_content_recommendations(rec)

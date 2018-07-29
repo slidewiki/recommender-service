@@ -5,6 +5,7 @@ from scipy import linalg, dot
 import sklearn.metrics
 import time
 import sys
+import math
 
 
 # consider LANGUAGE:
@@ -33,7 +34,8 @@ class RecommenderSystem(object):
         more_pages = True
 
         base_url = 'https://deckservice.experimental.slidewiki.org'
-        url = base_url + "/decks?rootsOnly=false&idOnly=false&status=public&sort=id&page=" + str(page) + "&pageSize=" + str(page_size)
+        url = base_url + "/decks?rootsOnly=false&idOnly=false&status=public&sort=id&page=" + str(
+            page) + "&pageSize=" + str(page_size)
         # consider using rootsOnly=true
         while more_pages:
             print('Getting decks and info. Requesting {}'.format(url))
@@ -64,9 +66,9 @@ class RecommenderSystem(object):
                                                           'authorId': author_id,
                                                           'author': author}
                 except:
-                    print("Parsing error url= "+url)
+                    print("Parsing error url= " + url)
             except:
-                print("Unexpected json response url= "+url)
+                print("Unexpected json response url= " + url)
 
         return all_decks_ids, all_data_dict
 
@@ -382,23 +384,40 @@ class RecommenderSystem(object):
         return matrix, all_user_ids_positions, real_deck_ids
 
     @staticmethod
-    def build_deck2deck_matrix(deck_ids):
-        # matrix  deckId  x deckId (0 or 1 if rated / visited / etc)
+    def cosine_similarity(features1, features2):
+        dot_product, acum1, acum2 = 0, 0, 0
+        for index, feature in enumerate(features1):
+            if feature > 0:
+                acum1 += feature * feature
+                if features2[index] > 0:
+                    dot_product += feature * features2[index]
+            if features2[index] > 0:
+                acum2 += features2[index] * features2[index]
+        acum1 = math.sqrt(acum1)
+        acum2 = math.sqrt(acum2)
+        acum_product = acum1 * acum2
+        cosine_similarity = 0
+        if acum_product > 0:
+            cosine_similarity = dot_product / acum_product
+        return cosine_similarity
 
-        matrix = np.ones((len(deck_ids), len(deck_ids)), dtype=int)
+    def calculate_decks_similarity(self, matrix_tfidf, deck_ids):
+        similarity_matrix = np.zeros((len(deck_ids), len(deck_ids)))
 
-        j = 0
         all_deck_ids_positions = {}
         real_deck_ids = {}
-        for key in deck_ids:
-            all_deck_ids_positions[key] = j
-            real_deck_ids[j] = key
-            j += 1
+        for index, key in enumerate(deck_ids):
+            all_deck_ids_positions[key] = index
+            real_deck_ids[index] = key
+            index += 1
 
-        for i in range(0, len(deck_ids)):
-            matrix[i][i] = 0
-
-        return matrix, all_deck_ids_positions, real_deck_ids
+            for j in range(index + 1, len(deck_ids)):
+                if index != j:
+                    similarity = self.cosine_similarity(matrix_tfidf[index], matrix_tfidf[j])
+                    similarity_matrix[index][j] = similarity
+                    similarity_matrix[j][index] = similarity
+        print("shape similarity matrix: " + str(similarity_matrix.shape))
+        return similarity_matrix, all_deck_ids_positions, real_deck_ids
 
     @staticmethod
     def user_profile_creation(rating_matrix, item_prof_matrix):
@@ -457,13 +476,10 @@ class RecommenderSystem(object):
     def calculate_data_recommendation_deck(self, deck_ids, max_features, file_name_suffix):
 
         matrix_tfidf, used_deck_ids = self.calculate_data_content_tfidfmatrix(self, deck_ids, max_features)
-
-        matrix_deck, deck_ids_positions, real_deck_ids = self.build_deck2deck_matrix(used_deck_ids)
-
-        deck_profile = dot(matrix_deck, matrix_tfidf) / linalg.norm(matrix_deck) / linalg.norm(matrix_tfidf)
-
-        similarity = sklearn.metrics.pairwise.cosine_similarity(deck_profile, matrix_tfidf, dense_output=True)
-
+        start = time.time()
+        similarity, deck_ids_positions, real_deck_ids = self.calculate_decks_similarity(matrix_tfidf,
+                                                                                        used_deck_ids)
+        print(str(time.time() - start) + " similarity deck2deck matrix creation elapsed time (seconds)")
         self.store_matrix(similarity, 'similarityContent' + file_name_suffix)
         self.store_dict(deck_ids_positions, 'deck_ids_positionsContent' + file_name_suffix)
         self.store_dict(real_deck_ids, 'real_deck_idsContent' + file_name_suffix)
@@ -474,9 +490,10 @@ class RecommenderSystem(object):
         matrix_tfidf, used_deck_ids = self.calculate_data_content_tfidfmatrix(self, deck_ids, max_features)
 
         # DECK recommendation, a.k.a. only content recommendation
-        matrix_deck, deck_ids_positions, real_deck_ids = self.build_deck2deck_matrix(used_deck_ids)
-        deck_profile = dot(matrix_deck, matrix_tfidf) / linalg.norm(matrix_deck) / linalg.norm(matrix_tfidf)
-        similarity = sklearn.metrics.pairwise.cosine_similarity(deck_profile, matrix_tfidf, dense_output=True)
+        start = time.time()
+        similarity, deck_ids_positions, real_deck_ids = self.calculate_decks_similarity(matrix_tfidf,
+                                                                                        used_deck_ids)
+        print(str(time.time() - start) + " similarity deck2deck matrix creation elapsed time (seconds)")
         self.store_matrix(similarity, 'similarityContent' + file_name_suffix)
         self.store_dict(deck_ids_positions, 'deck_ids_positionsContent' + file_name_suffix)
         self.store_dict(real_deck_ids, 'real_deck_idsContent' + file_name_suffix)
