@@ -409,7 +409,6 @@ class RecommenderSystem(object):
         for index, key in enumerate(deck_ids):
             all_deck_ids_positions[key] = index
             real_deck_ids[index] = key
-            index += 1
 
             for j in range(index + 1, len(deck_ids)):
                 if index != j:
