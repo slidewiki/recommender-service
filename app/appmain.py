@@ -28,7 +28,7 @@ def initialize_app(flask_app):
 
     blueprint = Blueprint('reco', __name__)
 
-    api = Api(version='Beta', title='Recommender Service',
+    api = Api(version='1.0', title='Recommender Service',
               description='Recommendation of SlideWiki decks', doc='/documentation')
 
     @api.errorhandler
@@ -255,7 +255,7 @@ def initialize_app(flask_app):
 def main():
     initialize_app(app)
     log.info('>>>>> Starting server at http://{}/ <<<<<'.format(app.config['SERVER_NAME']))
-    app.run(host='0.0.0.0', port=8000, debug=settings.FLASK_DEBUG, use_reloader=False)
+    app.run(host='0.0.0.0', port=settings.PORT, debug=settings.FLASK_DEBUG, use_reloader=False)
 
 
 if __name__ == "__main__":

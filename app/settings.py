@@ -1,5 +1,6 @@
 # Flask settings
-FLASK_SERVER_NAME = 'recommenderservice.experimental.slidewiki.org:80' #localhost:8888
+PORT = 8000
+FLASK_SERVER_NAME = 'localhost:' + str(PORT)  # localhost: or recommenderservice.experimental.slidewiki.org:
 FLASK_DEBUG = False  # Do not use debug mode in production
 
 # Flask-Restplus settings
