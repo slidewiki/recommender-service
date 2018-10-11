@@ -5,7 +5,7 @@ from flask import Flask, Blueprint, request
 from flask_restplus import Api, Resource, fields
 import sys
 
-sys.path.append("/")
+sys.path.append(".")
 
 from app.reco import recommender
 
@@ -106,7 +106,6 @@ def initialize_app(flask_app):
     @api.doc(params={'deck_id': 'The unique identifier of a deck'})
     @api.doc(params={'numberReco': 'Number of desired recommendations'})
     class DeckRecommendation(Resource):
-
         @api.marshal_list_with(deck)
         def get(self, deck_id, number_reco=5):
             """
@@ -225,20 +224,24 @@ def initialize_app(flask_app):
                 recommended_decks_list_dict.append(reco_deck)
                 n_reco += 1
 
+            cont = 0
             while n_reco < number_reco:
+                if cont > len(recommended_decks_list_dict_deck) + len(recommended_decks_list_dict_user):
+                    break
+                cont += 1
                 if deck_reco_count < len(recommended_decks_list_dict_deck) and \
                         recommended_decks_list_dict_deck[deck_reco_count]['id'] not in recommended_decks_ids:
                     recommended_decks_ids.append(recommended_decks_list_dict_deck[deck_reco_count]['id'])
                     recommended_decks_list_dict.append(recommended_decks_list_dict_deck[deck_reco_count])
-                    deck_reco_count += 1
                     n_reco += 1
+                deck_reco_count += 1
                 if user_reco_count < len(recommended_decks_list_dict_user) and \
                         recommended_decks_list_dict_user[user_reco_count]['id'] not in recommended_decks_ids and \
                         n_reco < number_reco:
                     recommended_decks_ids.append(recommended_decks_list_dict_user[user_reco_count]['id'])
                     recommended_decks_list_dict.append(recommended_decks_list_dict_user[user_reco_count])
-                    user_reco_count += 1
                     n_reco += 1
+                user_reco_count += 1
 
             return recommended_decks_list_dict
 
