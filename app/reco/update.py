@@ -7,7 +7,7 @@ def update_all_recommendations(rec):
 
     start = time.time()
     deck_ids, all_data_dict = rec.get_all_decks_ids_pagination()
-    rec.store_dict(all_data_dict, "deckid_title_descrip")
+    rec.store_dict(all_data_dict, "./data/deckid_title_descrip")
     time_get_decks = time.time() - start
     print('{} obtained deck ids'.format(len(deck_ids)))
     print(str(time_get_decks) + " get deck ids elapsed time (seconds)")
@@ -29,7 +29,7 @@ def update_user_recommendations(rec):
 
     start = time.time()
     deck_ids, all_data_dict = rec.get_all_decks_ids_pagination()
-    rec.store_dict(all_data_dict, "deckid_title_descrip")
+    rec.store_dict(all_data_dict, "./data/deckid_title_descrip")
     time_get_decks = time.time() - start
     print('{} obtained deck ids'.format(len(deck_ids)))
     print(str(time_get_decks) + " get deck ids elapsed time (seconds)")
@@ -51,7 +51,7 @@ def update_deck_recommendations(rec):
 
     start = time.time()
     deck_ids, all_data_dict = rec.get_all_decks_ids_pagination()
-    rec.store_dict(all_data_dict, "deckid_title_descrip")
+    rec.store_dict(all_data_dict, "./data/deckid_title_descrip")
     time_get_decks = time.time() - start
     print('{} obtained deck ids'.format(len(deck_ids)))
     print(str(time_get_decks) + " get deck ids elapsed time (seconds)")
@@ -93,5 +93,4 @@ def update_subset_content_recommendations(rec):
 if __name__ == "__main__":
     rec = recommender.RecommenderSystem()
     update_all_recommendations(rec)
-    # update_deck_recommendations(rec)
     # update_subset_content_recommendations(rec)

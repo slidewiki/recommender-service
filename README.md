@@ -13,9 +13,10 @@ The features of the decks considered are the contents of the deck itself using t
 
 1. git clone https://github.com/slidewiki/recommender-service
 2. cd recommender-service/
-3. docker build -t test-recommender-service .
-4. docker run -it --rm -p 8880:3000 test-recommender-service
-5. the service will be available at localhost:8880 with the documentation available at localhost:8880/documentation
+3. (if needed) Change corresponding server name (with port) in FLASK_SERVER_NAME at app/settings.py 
+4. (sudo) docker build -t test-recommender-service .
+5. (sudo) docker run -it --rm -p 80:80 test-recommender-service 
+6. The service will be available at localhost with the documentation available at localhost/documentation
 
 ### How to without docker
 
@@ -27,3 +28,4 @@ The features of the decks considered are the contents of the deck itself using t
 6. Change corresponding server name (with port) in FLASK_SERVER_NAME at app/settings.py
 7. Setup/install the application: 'sudo python3 setup.py install'
 8. Run the server: 'python3 app/appmain.py'
+9. The service will be available at localhost:PORT with the documentation available at localhost:PORT/documentation

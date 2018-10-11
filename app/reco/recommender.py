@@ -452,7 +452,7 @@ class RecommenderSystem(object):
 
         start = time.time()
         all_users_activities, user_ids, likes_downloads = self.get_all_users_activities_from_decks(used_deck_ids)
-        self.store_dict(likes_downloads, "likes_downloads")
+        self.store_dict(likes_downloads, "./data/likes_downloads")
         print(str(time.time() - start) + " get user activities elapsed time (seconds)")
 
         start = time.time()
@@ -467,9 +467,9 @@ class RecommenderSystem(object):
         similarity = self.user_profile_creation(matrix_user_activities, matrix_tfidf)
         print(str(time.time() - start) + " user profile creation elapsed time (seconds)")
 
-        self.store_matrix(similarity, 'similarity' + file_name_suffix)
-        self.store_dict(user_ids_positions, 'user_ids_positions' + file_name_suffix)
-        self.store_dict(real_deck_ids, 'real_deck_ids' + file_name_suffix)
+        self.store_matrix(similarity, './data/similarity' + file_name_suffix)
+        self.store_dict(user_ids_positions, './data/user_ids_positions' + file_name_suffix)
+        self.store_dict(real_deck_ids, './data/real_deck_ids' + file_name_suffix)
 
     @staticmethod
     def calculate_data_recommendation_deck(self, deck_ids, max_features, file_name_suffix):
@@ -479,9 +479,9 @@ class RecommenderSystem(object):
         similarity, deck_ids_positions, real_deck_ids = self.calculate_decks_similarity(matrix_tfidf,
                                                                                         used_deck_ids)
         print(str(time.time() - start) + " similarity deck2deck matrix creation elapsed time (seconds)")
-        self.store_matrix(similarity, 'similarityContent' + file_name_suffix)
-        self.store_dict(deck_ids_positions, 'deck_ids_positionsContent' + file_name_suffix)
-        self.store_dict(real_deck_ids, 'real_deck_idsContent' + file_name_suffix)
+        self.store_matrix(similarity, './data/similarityContent' + file_name_suffix)
+        self.store_dict(deck_ids_positions, './data/deck_ids_positionsContent' + file_name_suffix)
+        self.store_dict(real_deck_ids, './data/real_deck_idsContent' + file_name_suffix)
 
     @staticmethod
     def calculate_data_recommendation_all(self, deck_ids, max_features, file_name_suffix):
@@ -493,15 +493,15 @@ class RecommenderSystem(object):
         similarity, deck_ids_positions, real_deck_ids = self.calculate_decks_similarity(matrix_tfidf,
                                                                                         used_deck_ids)
         print(str(time.time() - start) + " similarity deck2deck matrix creation elapsed time (seconds)")
-        self.store_matrix(similarity, 'similarityContent' + file_name_suffix)
-        self.store_dict(deck_ids_positions, 'deck_ids_positionsContent' + file_name_suffix)
-        self.store_dict(real_deck_ids, 'real_deck_idsContent' + file_name_suffix)
+        self.store_matrix(similarity, './data/similarityContent' + file_name_suffix)
+        self.store_dict(deck_ids_positions, './data/deck_ids_positionsContent' + file_name_suffix)
+        self.store_dict(real_deck_ids, './data/real_deck_idsContent' + file_name_suffix)
 
         # USER recommendation
         # get user activities for user recommendation
         start = time.time()
         all_users_activities, user_ids, likes_downloads = self.get_all_users_activities_from_decks(used_deck_ids)
-        self.store_dict(likes_downloads, "likes_downloads")
+        self.store_dict(likes_downloads, "./data/likes_downloads")
         print(str(time.time() - start) + " get user activities elapsed time (seconds)")
 
         matrix_user_activities, user_ids_positions, real_deck_ids = self.build_user_activity_matrix(
@@ -510,9 +510,9 @@ class RecommenderSystem(object):
         print("shape matrix user activities: " + str(matrix_user_activities.shape))
 
         similarity = self.user_profile_creation(matrix_user_activities, matrix_tfidf)
-        self.store_matrix(similarity, 'similarity' + file_name_suffix)
-        self.store_dict(user_ids_positions, 'user_ids_positions' + file_name_suffix)
-        self.store_dict(real_deck_ids, 'real_deck_ids' + file_name_suffix)
+        self.store_matrix(similarity, './data/similarity' + file_name_suffix)
+        self.store_dict(user_ids_positions, './data/user_ids_positions' + file_name_suffix)
+        self.store_dict(real_deck_ids, './data/real_deck_ids' + file_name_suffix)
 
     @staticmethod
     def user_recommendation(similarity, user_ids_positions, real_deck_ids, user_id, number_recom, user_deck_ids):
@@ -577,9 +577,9 @@ class RecommenderSystem(object):
     @staticmethod
     def user_recommendation_from_storage(self, user_id, number_reco, file_name_suffix):
 
-        similarity = self.load_matrix('similarity' + file_name_suffix)
-        user_ids_positions = self.load_dict('user_ids_positions' + file_name_suffix)
-        real_deck_ids = self.load_dict('real_deck_ids' + file_name_suffix)
+        similarity = self.load_matrix('./data/similarity' + file_name_suffix)
+        user_ids_positions = self.load_dict('./data/user_ids_positions' + file_name_suffix)
+        real_deck_ids = self.load_dict('./data/real_deck_ids' + file_name_suffix)
 
         # estimated time 0.5s
         user_deck_ids = self.get_decks_user(user_id)
@@ -596,9 +596,9 @@ class RecommenderSystem(object):
     @staticmethod
     def deck_recommendation_from_storage(self, deck_id, number_reco, file_name_suffix):
 
-        similarity = self.load_matrix('similarityContent' + file_name_suffix)
-        deck_ids_positions = self.load_dict('deck_ids_positionsContent' + file_name_suffix)
-        real_deck_ids = self.load_dict('real_deck_idsContent' + file_name_suffix)
+        similarity = self.load_matrix('./data/similarityContent' + file_name_suffix)
+        deck_ids_positions = self.load_dict('./data/deck_ids_positionsContent' + file_name_suffix)
+        real_deck_ids = self.load_dict('./data/real_deck_idsContent' + file_name_suffix)
 
         items_indexes, reco_values = self.deck_recommendation(similarity, deck_ids_positions, real_deck_ids,
                                                               deck_id, number_reco)

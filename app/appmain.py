@@ -81,14 +81,14 @@ def initialize_app(flask_app):
             rec = recommender.RecommenderSystem()
 
             # check valid user_id
-            user_ids_positions = rec.load_dict("user_ids_positions" + file_name_suffix)
+            user_ids_positions = rec.load_dict("./data/user_ids_positions" + file_name_suffix)
             if str(user_id) not in user_ids_positions:
                 return None, 404
 
             recommended_decks, reco_values = rec.user_recommendation_from_storage(rec, user_id, number_reco,
                                                                                   file_name_suffix)
-            all_data_dict = rec.load_dict("deckid_title_descrip")
-            likes_downloads = rec.load_dict("likes_downloads")
+            all_data_dict = rec.load_dict("./data/deckid_title_descrip")
+            likes_downloads = rec.load_dict("./data/likes_downloads")
             recommended_decks_list_dict = []
             cont = 0
             for i in recommended_decks:
@@ -120,15 +120,15 @@ def initialize_app(flask_app):
             rec = recommender.RecommenderSystem()
 
             # check valid deck_id
-            deck_ids_positions = rec.load_dict("deck_ids_positionsContent" + file_name_suffix)
+            deck_ids_positions = rec.load_dict("./data/deck_ids_positionsContent" + file_name_suffix)
             if str(deck_id) not in deck_ids_positions:
                 return None, 404
 
             recommended_decks, reco_values = rec.deck_recommendation_from_storage(rec, deck_id, number_reco,
                                                                                   file_name_suffix)
 
-            all_data_dict = rec.load_dict("deckid_title_descrip")
-            likes_downloads = rec.load_dict("likes_downloads")
+            all_data_dict = rec.load_dict("./data/deckid_title_descrip")
+            likes_downloads = rec.load_dict("./data/likes_downloads")
             recommended_decks_list_dict = []
             cont = 0
             for i in recommended_decks:
@@ -175,11 +175,11 @@ def initialize_app(flask_app):
             rec = recommender.RecommenderSystem()
 
             # check valid deck_id
-            deck_ids_positions = rec.load_dict("deck_ids_positionsContent" + file_name_suffix)
+            deck_ids_positions = rec.load_dict("./data/deck_ids_positionsContent" + file_name_suffix)
             if str(deck_id) not in deck_ids_positions:
                 return None, 404
             # check valid user_id
-            user_ids_positions = rec.load_dict("user_ids_positions" + file_name_suffix)
+            user_ids_positions = rec.load_dict("./data/user_ids_positions" + file_name_suffix)
             if str(user_id) not in user_ids_positions:
                 return None, 405
 
@@ -188,8 +188,8 @@ def initialize_app(flask_app):
                                                                                             file_name_suffix)
             recommended_decks_user, reco_values_user = rec.user_recommendation_from_storage(rec, user_id, number_reco,
                                                                                             file_name_suffix)
-            all_data_dict = rec.load_dict("deckid_title_descrip")
-            likes_downloads = rec.load_dict("likes_downloads")
+            all_data_dict = rec.load_dict("./data/deckid_title_descrip")
+            likes_downloads = rec.load_dict("./data/likes_downloads")
             recommended_decks_list_dict_deck = []
             cont = 0
             for i in recommended_decks_deck:
