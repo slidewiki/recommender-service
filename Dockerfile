@@ -18,16 +18,12 @@ COPY . .
 #   Configuration   #
 # ----------------- #
 
-EXPOSE 80
+EXPOSE 8000
 
-# ----------- #
-#   Cleanup   #
-# ----------- #
-
-RUN apt-get update && \
-    		apt-get autoremove -y && \
-		apt-get -y clean && \
-		rm -rf /var/lib/apt/lists/*
+# --------- #
+#   Build   #
+# --------- #
+RUN python setup.py install
 
 # -------- #
 #   Run!   #

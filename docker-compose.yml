@@ -1,11 +1,11 @@
-recommender-service:
-  image: slidewiki/recommender-service:latest-dev
+recommenderservice:
+  image: slidewiki/recommenderservice:latest-dev
   restart: on-failure:5
-  expose:
-    - "80"
   environment:
-    - APPLICATION_PORT=80
     - VIRTUAL_HOST=recommenderservice.experimental.slidewiki.org
     - SERVICE_URL_DECK=https://deckservice.experimental.slidewiki.org
+    - SERVICE_URL_USER=https://userservice.experimental.slidewiki.org
+    - SERVICE_URL_ACTIVITIES=https://activitiesservice.experimental.slidewiki.org
+    - SERVICE_URL_NLP=https://nlpservice.experimental.slidewiki.org
     - LETSENCRYPT_HOST=recommenderservice.experimental.slidewiki.org
     - LETSENCRYPT_EMAIL=meissner@informatik.uni-leipzig.de
