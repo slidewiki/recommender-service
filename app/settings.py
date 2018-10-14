@@ -2,7 +2,7 @@ import os
 
 # Flask settings
 PORT = int(os.environ.get("APPLICATION_PORT", default="8000"))
-FLASK_SERVER_NAME = os.environ.get("VIRTUAL_HOST", default="localhost") + ":" + str(PORT)
+FLASK_SERVER_NAME = os.environ.get("FLASK_SERVER_NAME", default=("localhost:" + str(PORT)))
 FLASK_DEBUG = False  # Do not use debug mode in production
 
 # Flask-Restplus settings
