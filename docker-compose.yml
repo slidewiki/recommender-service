@@ -10,3 +10,5 @@ recommenderservice:
     - SERVICE_URL_NLP=https://nlpservice.experimental.slidewiki.org
     - LETSENCRYPT_HOST=recommenderservice.experimental.slidewiki.org
     - LETSENCRYPT_EMAIL=meissner@informatik.uni-leipzig.de
+  volumes:
+    - /data/recommender-service/data:/data
