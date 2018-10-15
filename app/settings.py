@@ -6,7 +6,7 @@ FLASK_SERVER_NAME = os.environ.get("FLASK_SERVER_NAME", default=("localhost:" + 
 FLASK_DEBUG = False  # Do not use debug mode in production
 
 # Recommender features
-MAX_FEATURES = 2000
+MAX_FEATURES = int(os.environ.get("MAX_FEATURES", default="2000"))
 FILE_NAME_SUFFIX = 'Full' + str(MAX_FEATURES)
 
 # Flask-Restplus settings
