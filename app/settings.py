@@ -5,12 +5,6 @@ PORT = int(os.environ.get("APPLICATION_PORT", default="8000"))
 FLASK_SERVER_NAME = os.environ.get("FLASK_SERVER_NAME", default=("localhost:" + str(PORT)))
 FLASK_DEBUG = False  # Do not use debug mode in production
 
-# Services URLs
-DECK_SERVICE_URL = 'https://deckservice.experimental.slidewiki.org'
-ACTIVITIES_SERVICE_URL = 'https://activitiesservice.experimental.slidewiki.org'
-USER_SERVICE_URL = 'https://userservice.experimental.slidewiki.org'
-NLP_SERVICE_URL = 'https://nlpservice.experimental.slidewiki.org'
-
 # Recommender features
 MAX_FEATURES = 2000
 FILE_NAME_SUFFIX = 'Full' + str(MAX_FEATURES)
