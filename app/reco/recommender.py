@@ -101,7 +101,7 @@ class RecommenderSystem(object):
         page_size = 1000
         more_pages = True
 
-        base_url = 'https://deckservice.experimental.slidewiki.org'
+        base_url = settings.SERVICE_URL_DECK
         url = base_url + "/decks?user=" + str(user_id) + "&rootsOnly=false&idOnly=false&sort=id&page=" + str(
             page) + "&pageSize=" + str(page_size)
 

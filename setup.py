@@ -15,5 +15,5 @@ setup(
 
     packages=find_packages(),
 
-    install_requires=['flask-restplus', 'Flask-SQLAlchemy', 'numpy', 'scipy', 'requests', 'sklearn'],
+    install_requires=['flask-restplus', 'Flask-SQLAlchemy', 'numpy', 'scipy', 'requests', 'sklearn', 'werkzeug'],
 )

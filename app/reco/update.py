@@ -1,6 +1,7 @@
 import time
 import recommender
 import sys
+
 sys.path.append(".")
 from app import settings
 
