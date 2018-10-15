@@ -3,6 +3,8 @@ import os
 import settings
 from flask import Flask, Blueprint, request
 from flask_restplus import Api, Resource, fields
+from werkzeug.contrib.fixers import ProxyFix
+
 import sys
 
 sys.path.append(".")
@@ -10,6 +12,7 @@ sys.path.append(".")
 from app.reco import recommender
 
 app = Flask(__name__)
+app.wsgi_app = ProxyFix(app.wsgi_app)
 logging_conf_path = os.path.normpath(os.path.join(os.path.dirname(__file__), '../logging.conf'))
 logging.config.fileConfig(logging_conf_path)
 log = logging.getLogger(__name__)

@@ -15,8 +15,8 @@ The features of the decks considered are the contents of the deck itself using t
 2. cd recommender-service/
 3. (if needed) Change corresponding server name (with port) in FLASK_SERVER_NAME and services URLs at app/settings.py 
 4. (sudo) docker build -t test-recommender-service .
-5. (sudo) docker run -it --rm -p 80:80 test-recommender-service 
-6. The service will be available at localhost with the documentation available at localhost/documentation
+5. (sudo) docker run -it --rm -p 8000:8000 test-recommender-service 
+6. The service will be available at http://localhost:8000 with the documentation available at http://localhost:8000/documentation
 
 ### How to install and run without docker
 

@@ -2,7 +2,7 @@ from setuptools import setup, find_packages
 
 setup(
     name='recommender service',
-    version='Beta',
+    version='1.0',
     description='Recommender service using a RESTful API based on Flask-RESTPlus',
     url='',
     author='Jaume Jordán',

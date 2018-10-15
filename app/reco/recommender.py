@@ -7,9 +7,7 @@ import time
 import sys
 import math
 
-sys.path.append(".")
 from app import settings
-
 
 # consider LANGUAGE:
 # TOTAL:3868, UNKNOWN 2252, en 1343, es 87, de 56, da 42, cy 24, el 18, nl 9, et 9, af 7,
@@ -36,7 +34,7 @@ class RecommenderSystem(object):
         page_size = 1000
         more_pages = True
 
-        base_url = settings.DECK_SERVICE_URL
+        base_url = settings.SERVICE_URL_DECK
         url = base_url + "/decks?rootsOnly=false&idOnly=false&status=public&sort=id&page=" + str(
             page) + "&pageSize=" + str(page_size)
         # consider using rootsOnly=true
@@ -79,7 +77,7 @@ class RecommenderSystem(object):
     def get_display_name_or_user_name(names_dict, user_id):
         if user_id in names_dict:
             return names_dict, names_dict[user_id]
-        base_url = settings.USER_SERVICE_URL
+        base_url = settings.SERVICE_URL_USER
         url = base_url + '/user/' + str(user_id)
         try:
             r = requests.get(url)
@@ -103,7 +101,7 @@ class RecommenderSystem(object):
         page_size = 1000
         more_pages = True
 
-        base_url = settings.DECK_SERVICE_URL
+        base_url = 'https://deckservice.experimental.slidewiki.org'
         url = base_url + "/decks?user=" + str(user_id) + "&rootsOnly=false&idOnly=false&sort=id&page=" + str(
             page) + "&pageSize=" + str(page_size)
 
@@ -137,7 +135,7 @@ class RecommenderSystem(object):
         min_char_length_for_tag = 3
         max_number_of_words = 4
         min_docs_language_dependent = 50
-        url = settings.NLP_SERVICE_URL+'/nlp/calculateTfidfValues/'
+        url = settings.SERVICE_URL_NLP + '/nlp/calculateTfidfValues/'
 
         try:
             r = requests.get(url + str(deck_id) +
@@ -205,7 +203,7 @@ class RecommenderSystem(object):
         min_char_length_for_tag = 3
         max_number_of_words = 4
         min_docs_language_dependent = 50
-        url = settings.NLP_SERVICE_URL+'/nlp/calculateTfidfValues/'
+        url = settings.SERVICE_URL_NLP + '/nlp/calculateTfidfValues/'
 
         r = requests.get(url + str(deck_id) +
                          "?performTitleBoost=" + str(perform_title_boost) +
@@ -320,7 +318,7 @@ class RecommenderSystem(object):
         print("retrieving user activities from deck=" + str(deck_id))
         activities = {}
         likes, downloads = 0, 0
-        url = settings.ACTIVITIES_SERVICE_URL+'/activities/deck/'
+        url = settings.SERVICE_URL_ACTIVITIES + '/activities/deck/'
         try:
             r = requests.get(url + str(deck_id))
         except:
