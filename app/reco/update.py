@@ -1,5 +1,8 @@
 import time
 import recommender
+import sys
+sys.path.append(".")
+from app import settings
 
 
 def update_all_recommendations(rec):
@@ -12,11 +15,8 @@ def update_all_recommendations(rec):
     print('{} obtained deck ids'.format(len(deck_ids)))
     print(str(time_get_decks) + " get deck ids elapsed time (seconds)")
 
-    max_features = 1500
-    file_name_suffix = 'Full' + str(max_features)
-
     start = time.time()
-    rec.calculate_data_recommendation_all(rec, deck_ids, max_features, file_name_suffix)
+    rec.calculate_data_recommendation_all(rec, deck_ids, settings.MAX_FEATURES, settings.FILE_NAME_SUFFIX)
     end = time.time()
     print(str(end - start) + " get data elapsed time (seconds)")
 
@@ -34,11 +34,8 @@ def update_user_recommendations(rec):
     print('{} obtained deck ids'.format(len(deck_ids)))
     print(str(time_get_decks) + " get deck ids elapsed time (seconds)")
 
-    max_features = 1500
-    file_name_suffix = 'Full' + str(max_features)
-
     start = time.time()
-    rec.calculate_data_recommendation_user(rec, deck_ids, max_features, file_name_suffix)
+    rec.calculate_data_recommendation_user(rec, deck_ids, settings.MAX_FEATURES, settings.FILE_NAME_SUFFIX)
     end = time.time()
     print(str(end - start) + " get data elapsed time (seconds)")
 
@@ -56,11 +53,8 @@ def update_deck_recommendations(rec):
     print('{} obtained deck ids'.format(len(deck_ids)))
     print(str(time_get_decks) + " get deck ids elapsed time (seconds)")
 
-    max_features = 1500
-    file_name_suffix = 'Full' + str(max_features)
-
     start = time.time()
-    rec.calculate_data_recommendation_deck(rec, deck_ids, max_features, file_name_suffix)
+    rec.calculate_data_recommendation_deck(rec, deck_ids, settings.MAX_FEATURES, settings.FILE_NAME_SUFFIX)
     end = time.time()
     print(str(end - start) + " get data elapsed time (seconds)")
 
@@ -78,11 +72,8 @@ def update_subset_content_recommendations(rec):
                 2118, 2124, 2137, 2178, 2225, 2287, 2322, 2345, 2347, 2518, 2521, 2522, 2523, 2544, 2545, 2546, 2547,
                 2548, 2549, 2550, 2551, 2552, 2553, 2554, 2555, 2556, 2557, 2558]
 
-    max_features = 1500
-    file_name_suffix = 'Full' + str(max_features)
-
     start = time.time()
-    rec.calculate_data_recommendation_deck(rec, deck_ids, max_features, file_name_suffix)
+    rec.calculate_data_recommendation_deck(rec, deck_ids, settings.MAX_FEATURES, settings.FILE_NAME_SUFFIX)
     end = time.time()
     print(str(end - start) + " get data elapsed time (seconds)")
 
