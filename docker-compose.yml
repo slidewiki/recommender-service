@@ -4,7 +4,7 @@ recommenderservice:
   environment:
     - VIRTUAL_HOST=recommenderservice.experimental.slidewiki.org
     - FLASK_SERVER_NAME=recommenderservice.experimental.slidewiki.org
-    - MAX_FEATURES=2000
+    - MAX_FEATURES=1000
     - SERVICE_URL_DECK=https://deckservice.experimental.slidewiki.org
     - SERVICE_URL_USER=https://userservice.experimental.slidewiki.org
     - SERVICE_URL_ACTIVITIES=https://activitiesservice.experimental.slidewiki.org
