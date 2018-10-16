@@ -9,9 +9,7 @@ import math
 
 from app import settings
 
-# consider LANGUAGE:
-# TOTAL:3868, UNKNOWN 2252, en 1343, es 87, de 56, da 42, cy 24, el 18, nl 9, et 9, af 7,
-# fa 5, sv 4, bg 4, it 3, pt 2, is 2, mt 2, pl 2, ar 2, ru 2, hr 1, mk 1, ms 1, sw 1, so 1,
+
 # consider forks and sub-decks (not attached)
 
 # item profiles
@@ -40,36 +38,39 @@ class RecommenderSystem(object):
         # consider using rootsOnly=true
         while more_pages:
             print('Getting decks and info. Requesting {}'.format(url))
-            r = requests.get(url)
-
             try:
-                result_json = r.json()
-                if result_json['_meta']['links'].get('next', 0) != 0:
-                    url = base_url + result_json['_meta']['links']['next']
-                else:
-                    more_pages = False
+                r = requests.get(url)
                 try:
-                    if len(result_json['items']) > 0:
-                        for item in result_json['items']:
-                            all_decks_ids.append(item['_id'])
-                            first_slide, date, author_id, author = "", "", "", ""
-                            if item.get('firstSlide', 0) != 0:
-                                first_slide = item['firstSlide']
-                            if item.get('lastUpdate', 0) != 0:
-                                date = item['lastUpdate']
-                            if item.get('owner', 0) != 0:
-                                author_id = item['owner']
-                                names_dict, author = self.get_display_name_or_user_name(names_dict, author_id)
-                            all_data_dict[item['_id']] = {'id': item['_id'], 'title': item['title'],
-                                                          'description': item['description'],
-                                                          'firstSlide': first_slide,
-                                                          'date': date,
-                                                          'authorId': author_id,
-                                                          'author': author}
-                except:
-                    print("Parsing error url= " + url)
-            except:
-                print("Unexpected json response url= " + url)
+                    if r.status_code == 200:
+                        result_json = r.json()
+                        if result_json['_meta']['links'].get('next', 0) != 0:
+                            url = base_url + result_json['_meta']['links']['next']
+                        else:
+                            more_pages = False
+
+                        if len(result_json['items']) > 0:
+                            for item in result_json['items']:
+                                all_decks_ids.append(item['_id'])
+                                first_slide, date, author_id, author = "", "", "", ""
+                                if item.get('firstSlide', 0) != 0:
+                                    first_slide = item['firstSlide']
+                                if item.get('lastUpdate', 0) != 0:
+                                    date = item['lastUpdate']
+                                if item.get('owner', 0) != 0:
+                                    author_id = item['owner']
+                                    names_dict, author = self.get_display_name_or_user_name(names_dict, author_id)
+                                all_data_dict[item['_id']] = {'id': item['_id'], 'title': item['title'],
+                                                              'description': item['description'],
+                                                              'firstSlide': first_slide,
+                                                              'date': date,
+                                                              'authorId': author_id,
+                                                              'author': author}
+                    else:
+                        print(url + " returned status code = " + str(r.status_code))
+                except KeyError:
+                    print("Unexpected json response url= " + url)
+            except requests.exceptions.SSLError:
+                print("Unexpected error:", sys.exc_info()[0])
 
         return all_decks_ids, all_data_dict
 
@@ -81,16 +82,24 @@ class RecommenderSystem(object):
         url = base_url + '/user/' + str(user_id)
         try:
             r = requests.get(url)
-            result_json = r.json()
-            if 'displayName' in result_json and result_json['displayName']:
-                names_dict[user_id] = result_json['displayName']
-                return names_dict, result_json['displayName']
-            elif 'username' in result_json and result_json['username']:
-                names_dict[user_id] = result_json['username']
-                return names_dict, result_json['username']
-            return names_dict, ''
-        except:
-            print('Unexpected json response url= ' + url)
+            if r.status_code == 200:
+                try:
+                    result_json = r.json()
+                    if 'displayName' in result_json and result_json['displayName']:
+                        names_dict[user_id] = result_json['displayName']
+                        return names_dict, result_json['displayName']
+                    elif 'username' in result_json and result_json['username']:
+                        names_dict[user_id] = result_json['username']
+                        return names_dict, result_json['username']
+                    return names_dict, ''
+                except KeyError:
+                    print("Unexpected json response url= " + url)
+                    return names_dict, ''
+            else:
+                print(url + " returned status code = " + str(r.status_code))
+                return names_dict, ''
+        except requests.exceptions.SSLError:
+            print("Unexpected error:", sys.exc_info()[0])
             return names_dict, ''
 
     @staticmethod
@@ -106,20 +115,25 @@ class RecommenderSystem(object):
             page) + "&pageSize=" + str(page_size)
 
         while more_pages:
-            r = requests.get(url)
-
             try:
-                result_json = r.json()
-                if result_json['_meta']['links'].get('next', 0) != 0:
-                    url = base_url + result_json['_meta']['links']['next']
-                else:
-                    more_pages = False
+                r = requests.get(url)
+                if r.status_code == 200:
+                    try:
+                        result_json = r.json()
+                        if result_json['_meta']['links'].get('next', 0) != 0:
+                            url = base_url + result_json['_meta']['links']['next']
+                        else:
+                            more_pages = False
 
-                if len(result_json['items']) > 0:
-                    for item in result_json['items']:
-                        decks_ids.append(item['_id'])
-            except:
-                print("Unexpected json response url= " + url)
+                        if len(result_json['items']) > 0:
+                            for item in result_json['items']:
+                                decks_ids.append(item['_id'])
+                    except KeyError:
+                        print("Unexpected json response url= " + url)
+                else:
+                    print(url + " returned status code = " + str(r.status_code))
+            except requests.exceptions.SSLError:
+                print("Unexpected error:", sys.exc_info()[0])
 
         return decks_ids
 
@@ -150,12 +164,11 @@ class RecommenderSystem(object):
                              "&minCharLengthForTag=" + str(min_char_length_for_tag) +
                              "&maxNumberOfWords=" + str(max_number_of_words) +
                              "&tfidfMinDocsToPerformLanguageDependent=" + str(min_docs_language_dependent))
-        except:
+        except requests.exceptions.SSLError:
             print("Unexpected error:", sys.exc_info()[0])
-        try:
-            result_json = r.json()
-        except:
-            print("Unexpected json response url= " + url)
+
+        if r.status_code != 200:
+            print(url + " for deck_id=" + str(deck_id) + " returned status code = " + str(r.status_code))
             return [], []
 
         # "TFIDF_tokens_languagedependent"
@@ -164,37 +177,58 @@ class RecommenderSystem(object):
         #
         # TFIDF_tokens_notlanguagedependent
 
+        result_json = r.json()
         tokens = []
-        valuesNormalized = []
+        values_normalized = []
         try:
-            if len(result_json['tfidfResult']) == 0:
+            if 'tfidfResult' not in result_json:
                 print("empty NLP")
-                return tokens, valuesNormalized
+                return tokens, values_normalized
 
-            tokens_language_dependent = result_json['tfidfResult']['tfidfMap']['TFIDF_tokens_languagedependent']
-            for key, element in tokens_language_dependent.items():
-                tokens.append(key)
-                valuesNormalized.append(element)
+            if result_json['tfidfResult']['tfidfValuesWereCalculatedLanguageDependent']:
 
-            tokens_NER = result_json['tfidfResult']['tfidfMap']['TFIDF_NER_languagedependent']
-            for key, element in tokens_NER.items():
-                tokens.append(key)
-                valuesNormalized.append(element)
+                if 'TFIDF_tokens_languagedependent' in result_json['tfidfResult']['tfidfMap']:
+                    tokens_language_dependent = result_json['tfidfResult']['tfidfMap']['TFIDF_tokens_languagedependent']
+                    for key, element in tokens_language_dependent.items():
+                        tokens.append(key)
+                        values_normalized.append(element)
+                if 'TFIDF_NER_languagedependent' in result_json['tfidfResult']['tfidfMap']:
+                    tokens_NER = result_json['tfidfResult']['tfidfMap']['TFIDF_NER_languagedependent']
+                    for key, element in tokens_NER.items():
+                        tokens.append(key)
+                        values_normalized.append(element)
+                if 'TFIDF_DBPediaSpotlight_URI_languagedependent' in result_json['tfidfResult']['tfidfMap']:
+                    tokens_DBPedia = result_json['tfidfResult']['tfidfMap'][
+                        'TFIDF_DBPediaSpotlight_URI_languagedependent']
+                    for key, element in tokens_DBPedia.items():
+                        tokens.append(key)
+                        values_normalized.append(element)
+            else:
+                if 'TFIDF_tokens_notlanguagedependent' in result_json['tfidfResult']['tfidfMap']:
+                    tokens_not_language_dependent = result_json['tfidfResult']['tfidfMap'][
+                        'TFIDF_tokens_notlanguagedependent']
+                    for key, element in tokens_not_language_dependent.items():
+                        tokens.append(key)
+                        values_normalized.append(element)
+                if 'TFIDF_NER_notlanguagedependent' in result_json['tfidfResult']['tfidfMap']:
+                    tokens_NER = result_json['tfidfResult']['tfidfMap']['TFIDF_NER_notlanguagedependent']
+                    for key, element in tokens_NER.items():
+                        tokens.append(key)
+                        values_normalized.append(element)
+                if 'TFIDF_DBPediaSpotlight_URI_notlanguagedependent' in result_json['tfidfResult']['tfidfMap']:
+                    tokens_DBPedia = result_json['tfidfResult']['tfidfMap'][
+                        'TFIDF_DBPediaSpotlight_URI_notlanguagedependent']
+                    for key, element in tokens_DBPedia.items():
+                        tokens.append(key)
+                        values_normalized.append(element)
 
-            tokens_DBPedia = result_json['tfidfResult']['tfidfMap']['TFIDF_DBPediaSpotlight_URI_languagedependent']
-            for key, element in tokens_DBPedia.items():
-                tokens.append(key)
-                valuesNormalized.append(element)
+        except KeyError:
+            print("Empty deck. No tokens available", sys.exc_info()[0])
 
-        except:
-            print("Empty deck. No tokens available")
-
-        return tokens, valuesNormalized
+        return tokens, values_normalized
 
     @staticmethod
     def get_deck_language(deck_id):
-        # print("retrieving NLP from deck=" + str(deck_id))
-
         perform_title_boost = "true"
         title_boost_with_fixed_factor = -1
         title_boost_limit_to_frequency_of_most_frequent_word = "true"
@@ -204,39 +238,37 @@ class RecommenderSystem(object):
         max_number_of_words = 4
         min_docs_language_dependent = 50
         url = settings.SERVICE_URL_NLP + '/nlp/calculateTfidfValues/'
-
-        r = requests.get(url + str(deck_id) +
-                         "?performTitleBoost=" + str(perform_title_boost) +
-                         "&titleBoostWithFixedFactor=" + str(title_boost_with_fixed_factor) +
-                         "&titleBoostlimitToFrequencyOfMostFrequentWord=" + str(
-            title_boost_limit_to_frequency_of_most_frequent_word) +
-                         "&minFrequencyOfTermOrEntityToBeConsidered=" + str(
-            min_frequency_of_term_or_entity_to_be_considered) +
-                         "&applyMinFrequencyOfTermOnlyAfterTitleBoost=" + str(
-            apply_min_frequency_of_term_only_after_title_boost) +
-                         "&minCharLengthForTag=" + str(min_char_length_for_tag) +
-                         "&maxNumberOfWords=" + str(max_number_of_words) +
-                         "&tfidfMinDocsToPerformLanguageDependent=" + str(min_docs_language_dependent))
-
         try:
-            result_json = r.json()
-        except:
-            print("Unexpected json response")
-            return None, None
+            r = requests.get(url + str(deck_id) +
+                             "?performTitleBoost=" + str(perform_title_boost) +
+                             "&titleBoostWithFixedFactor=" + str(title_boost_with_fixed_factor) +
+                             "&titleBoostlimitToFrequencyOfMostFrequentWord=" + str(
+                title_boost_limit_to_frequency_of_most_frequent_word) +
+                             "&minFrequencyOfTermOrEntityToBeConsidered=" + str(
+                min_frequency_of_term_or_entity_to_be_considered) +
+                             "&applyMinFrequencyOfTermOnlyAfterTitleBoost=" + str(
+                apply_min_frequency_of_term_only_after_title_boost) +
+                             "&minCharLengthForTag=" + str(min_char_length_for_tag) +
+                             "&maxNumberOfWords=" + str(max_number_of_words) +
+                             "&tfidfMinDocsToPerformLanguageDependent=" + str(min_docs_language_dependent))
 
-        try:
-            if len(result_json['tfidfResult']) == 0:
-                print("********* empty")
-                return []
-            language = result_json['tfidfResult']['language']
-            decks_given_language = result_json['tfidfResult']['numberOfDecksInPlatformWithGivenLanguage']
+            if r.status_code == 200:
+                result_json = r.json()
+                try:
+                    if len(result_json['tfidfResult']) == 0:
+                        print("********* empty")
+                        return []
+                    language = result_json['tfidfResult']['language']
+                    decks_given_language = result_json['tfidfResult']['numberOfDecksInPlatformWithGivenLanguage']
 
-            print("deck=" + str(deck_id) + " language: " + language + " " + str(decks_given_language))
+                    print("deck=" + str(deck_id) + " language: " + language + " " + str(decks_given_language))
 
-            return language, decks_given_language
+                    return language, decks_given_language
 
-        except:
-            print("Empty deck. No tokens available")
+                except KeyError:
+                    print("Empty deck. No tokens available")
+        except requests.exceptions.SSLError:
+            print("Unexpected error:", sys.exc_info()[0])
 
         return None, None
 
@@ -321,21 +353,24 @@ class RecommenderSystem(object):
         url = settings.SERVICE_URL_ACTIVITIES + '/activities/deck/'
         try:
             r = requests.get(url + str(deck_id))
-        except:
+        except requests.exceptions.SSLError:
             print("Unexpected error:", sys.exc_info()[0])
-        try:
-            result_json = r.json()
-            for activity in result_json['items']:
-                user_id = activity['user_id']
-                if user_id not in activities:
-                    activities[user_id] = {deck_id: None}
-                if activity['activity_type'] == 'react':
-                    likes += 1
-                if activity['activity_type'] == 'download':
-                    downloads += 1
+        if r.status_code == 200:
+            try:
+                result_json = r.json()
+                for activity in result_json['items']:
+                    user_id = activity['user_id']
+                    if user_id not in activities:
+                        activities[user_id] = {deck_id: None}
+                    if activity['activity_type'] == 'react':
+                        likes += 1
+                    if activity['activity_type'] == 'download':
+                        downloads += 1
 
-        except:
-            print("Unexpected json response")
+            except KeyError:
+                print("Unexpected json response", sys.exc_info()[0])
+        else:
+            print(url + " returned status code = " + str(r.status_code))
 
         return activities, likes, downloads
 

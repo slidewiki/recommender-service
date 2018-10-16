@@ -33,7 +33,7 @@ The features of the decks considered are the contents of the deck itself using t
 ### How to update the contents of recommendation
 
 1. cd recommender-service/
-2. (if needed) Change MAX_FEATURES and/or FILE_NAME_SUFFIX at app/settings.py to consider a different number of features to consider by the recommender. 
+2. (if needed) Change MAX_FEATURES and/or FILE_NAME_SUFFIX at app/settings.py to consider a different number of features that the recommender takes from the transcription of the slides. 
 Note that if these values are changed, the recommender will not work until a complete app/reco/update.py process is made. 
 3. python3 app/reco/update.py 
 Note that this process will take proportional time to complete depending on the number of decks and the responding time of the different used services, mainly activity service and nlp service.
