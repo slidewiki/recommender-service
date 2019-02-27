@@ -151,6 +151,7 @@ class RecommenderSystem(object):
         min_docs_language_dependent = 50
         url = settings.SERVICE_URL_NLP + '/nlp/calculateTfidfValues/'
 
+        r = None
         try:
             r = requests.get(url + str(deck_id) +
                              "?performTitleBoost=" + str(perform_title_boost) +
@@ -166,6 +167,7 @@ class RecommenderSystem(object):
                              "&tfidfMinDocsToPerformLanguageDependent=" + str(min_docs_language_dependent))
         except requests.exceptions.SSLError:
             print("Unexpected error:", sys.exc_info()[0])
+            return [], []
 
         if r.status_code != 200:
             print(url + " for deck_id=" + str(deck_id) + " returned status code = " + str(r.status_code))
